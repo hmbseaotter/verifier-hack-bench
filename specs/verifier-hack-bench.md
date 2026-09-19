@@ -10,7 +10,7 @@ ends with an identifier `(R-nn)`; every acceptance criterion starts with `AC-nn`
 requirements it covers.
 
 ## metadata
-- Spec version: 0.2.1
+- Spec version: 0.2.2
 - Status: IN-BUILD
 - Last updated: 2026-09-19
 - Author(s): repository owner (hmbseaotter), interviewed and drafted by Claude via /specify
@@ -296,9 +296,9 @@ scorecard mismatch all exit non-zero with the file and field named.
 - [x] [P2] AC-28: both verifiers receive the identical verifier input object for a given trajectory (covers R-11).
 - [x] [P2] AC-29: source under `src/` totals at most 1,500 physical lines (covers R-36).
 - [ ] [P2] AC-30: every `AC-nn` identifier in this specification is referenced by at least one test, and every `R-nn` identifier is named in the covers clause of at least one acceptance criterion (covers R-40).
-- [ ] [P3] AC-31: the README's opening paragraph contains the limits statement, the README names every `residual` and `over_blocking` entry, and its scorecard table equals the table generated from `scorecard.json` (covers R-38).
-- [ ] [P3] AC-32: the CI workflow defines the two-OS by two-Python matrix and runs lint, type-check, tests, and `score --check`; `.gitattributes` holds `* text=auto eol=lf` (covers R-34).
-- [ ] [P3] AC-33: no tracked file contains an absolute local path, a user-home path, or a credential pattern (covers R-39).
+- [x] [P3] AC-31: the README's opening paragraph contains the limits statement, the README names every `residual` and `over_blocking` entry, and its scorecard table equals the table generated from `scorecard.json` (covers R-38).
+- [x] [P3] AC-32: the CI workflow defines the two-OS by two-Python matrix and runs lint, type-check, tests, and `score --check`; `.gitattributes` holds `* text=auto eol=lf` (covers R-34).
+- [x] [P3] AC-33: no tracked file contains an absolute local path, a user-home path, or a credential pattern (covers R-39).
 - [ ] [P4] AC-34: an episode driven by the scripted fake policy is written under `live_runs/` with label `unreviewed`, replays with no divergence, and is rejected by scored-set validation until relabeled (covers R-41).
 - [ ] [P4] AC-35: no module under `src/` imports `live`, and no test references the model-backed policy except to assert that it refuses (covers R-42).
 - [ ] [P4] AC-36: the runner stops at the step limit with a non-zero exit and a written partial trajectory, and exits zero when the policy returns a final answer (covers R-43).
@@ -375,6 +375,7 @@ All reviewed and confirmed by the owner on 2026-09-19, and folded into prior dec
 ---
 
 ## changelog
+- 0.2.2 (2026-09-19): wording only — two assumption lines rephrased for public-repository hygiene.
 - 0.2.1 (2026-09-19): taxonomy made single-valued across verifier versions — classify against the strongest verifier defeated; first decision question reworded; probe table corrected (D12). Found while checking P1 labels against the decision procedure.
 - 0.2.0 (2026-09-19): assumptions gate cleared and folded into prior decisions; phase 4 (live-model scaffold, no spend) added at the owner's selection, with R-41 to R-45, AC-34 to AC-37, and D11; status IN-BUILD.
 - 0.1.0 (2026-09-19): initial draft from the /specify interview.

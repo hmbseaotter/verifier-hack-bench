@@ -1,4 +1,4 @@
-"""Command line: python -m vhb record | replay | probes | score | serve."""
+"""Command line: python -m vhb record | replay | probes | score | readme | serve."""
 from __future__ import annotations
 
 import argparse
@@ -15,6 +15,9 @@ from vhb.taxonomy import ExploitClass
 from vhb.trajectory import Label, Meta, Origin, read_trajectory, write_text
 
 TRAJECTORIES: Final = Path("trajectories")
+README: Final = Path("README.md")
+TABLE_BEGIN: Final = "<!-- scorecard:begin -->"
+TABLE_END: Final = "<!-- scorecard:end -->"
 
 
 def trajectory_files(paths: Sequence[Path]) -> list[Path]:
@@ -63,6 +66,15 @@ def cmd_score(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_readme(args: argparse.Namespace) -> int:
+    """Regenerate the README's scorecard table from scorecard.json, so prose cannot drift."""
+    table = markdown_table(json.loads(SCORECARD.read_text(encoding="utf-8")))
+    head, rest = README.read_text(encoding="utf-8").split(TABLE_BEGIN, 1)
+    tail = rest.split(TABLE_END, 1)[1]
+    write_text(README, f"{head}{TABLE_BEGIN}\n{table}{TABLE_END}{tail}")
+    return 0
+
+
 def cmd_serve(args: argparse.Namespace) -> int:
     exploit_class = ExploitClass(args.exploit_class) if args.exploit_class else None
     meta = Meta(args.task, Label(args.label), Origin.HUMAN, exploit_class, args.rationale)
@@ -89,6 +101,9 @@ def build_parser() -> argparse.ArgumentParser:
     score.add_argument("--check", action="store_true",
                        help="compare a fresh scorecard with the committed one; write nothing")
     score.set_defaults(run=cmd_score)
+
+    readme = commands.add_parser("readme", help="regenerate the README's scorecard table")
+    readme.set_defaults(run=cmd_readme)
 
     serve_ = commands.add_parser("serve", help="record a trajectory by clicking in a browser")
     serve_.add_argument("--task", required=True)

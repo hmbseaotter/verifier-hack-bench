@@ -1,0 +1,29 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: ${{ matrix.os }} / python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+        with:
+          python-version: ${{ matrix.python }}
+      # The lock file pins every dependency, so the recorded response hashes reproduce exactly.
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run mypy
+      - run: uv run pytest -q
+      # The point of the matrix: the committed scorecard must reproduce byte for byte on both
+      # operating systems and on the oldest and newest supported Python.
+      - run: uv run python -m vhb score --check
+      - run: uv run python -m vhb replay
