@@ -259,10 +259,10 @@ scorecard mismatch all exit non-zero with the file and field named.
 ## acceptance criteria
 
 ### happy path
-- [ ] [P0] AC-01: two consecutive resets yield the same state digest, equal to the seed digest constant (covers R-01, R-04, R-15).
-- [ ] [P0] AC-02: recording the T1 honest action list yields a trajectory that replays with no divergence (covers R-16, R-17, R-18).
-- [ ] [P0] AC-03: recording the same action list twice yields byte-identical files in canonical JSON form (covers R-03, R-17).
-- [ ] [P0] AC-04: a session captured through record mode is stamped by the recorder and replays with no divergence (covers R-22, R-31).
+- [x] [P0] AC-01: two consecutive resets yield the same state digest, equal to the seed digest constant (covers R-01, R-04, R-15).
+- [x] [P0] AC-02: recording the T1 honest action list yields a trajectory that replays with no divergence (covers R-16, R-17, R-18).
+- [x] [P0] AC-03: recording the same action list twice yields byte-identical files in canonical JSON form (covers R-03, R-17).
+- [x] [P0] AC-04: a session captured through record mode is stamped by the recorder and replays with no divergence (covers R-22, R-31).
 - [ ] [P1] AC-05: every task has at least two honest trajectories with at least one atypical, at least one honest trajectory passing its naive verifier, and at least two targeted exploits (covers R-08).
 - [ ] [P1] AC-06: every targeted exploit passes its task's naive verifier (covers R-27).
 - [ ] [P1] AC-07: every committed trajectory validates; every exploit has exactly one class from the five and a non-empty rationale; each of the five classes has at least one targeted exploit (covers R-05, R-06).
@@ -275,8 +275,8 @@ scorecard mismatch all exit non-zero with the file and field named.
 - [ ] [P2] AC-14: refuse-only fails the hardened verifier of every feasible task, and on the infeasible task only answers declaring infeasibility with protected state unchanged pass the hardened verifier (covers R-23, R-24).
 
 ### edge cases
-- [ ] [P0] AC-15: a trajectory with one altered state digest replays with the altered step's index reported as the first divergence (covers R-18).
-- [ ] [P0] AC-16: actions whose path is an absolute URL, a scheme-relative `//host` path, or a relative path are refused without execution (covers R-25).
+- [x] [P0] AC-15: a trajectory with one altered state digest replays with the altered step's index reported as the first divergence (covers R-18).
+- [x] [P0] AC-16: actions whose path is an absolute URL, a scheme-relative `//host` path, or a relative path are refused without execution (covers R-25).
 - [ ] [P0] AC-17: no float appears anywhere in a snapshot, a trajectory, or the scorecard (covers R-02).
 - [ ] [P1] AC-18: each invalid trajectory shape named in R-26 is rejected with the file and the field named (covers R-26).
 - [ ] [P2] AC-19: a verifier that raises is scored as failed with the exception type in the reasons (covers R-30, R-37).
@@ -285,8 +285,8 @@ scorecard mismatch all exit non-zero with the file and field named.
 - [ ] [P2] AC-22: a diverging trajectory makes the scorer exit non-zero and leaves the committed scorecard untouched (covers R-20).
 
 ### constraint validation
-- [ ] [P0] AC-23: `mypy --strict src` exits zero, and every record type is a frozen dataclass (covers R-35).
-- [ ] [P0] AC-24: `serve` binds 127.0.0.1 (covers R-32).
+- [x] [P0] AC-23: `mypy --strict src` exits zero, and every record type is a frozen dataclass (covers R-35).
+- [x] [P0] AC-24: `serve` binds 127.0.0.1 (covers R-32).
 - [ ] [P1] AC-25: verifier modules import only the standard library and the package's own record, task, and taxonomy modules; each verifier returns equal verdicts on repeated calls; the verifier input type has no label, class, origin, or rationale field (covers R-07).
 - [ ] [P2] AC-26: scoring completes with socket creation patched to raise, and no module under `src/` imports an HTTP client or a model SDK (covers R-12).
 - [ ] [P2] AC-27: the scorecard holds only passed/total integer pairs for results and has no timestamp, host, path, or version field (covers R-13).
