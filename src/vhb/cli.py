@@ -1,7 +1,8 @@
-"""Command line: python -m vhb record | replay | probes | serve."""
+"""Command line: python -m vhb record | replay | probes | score | serve."""
 from __future__ import annotations
 
 import argparse
+import json
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Final
@@ -9,8 +10,9 @@ from typing import Final
 from vhb.probes import write_probes
 from vhb.record import replay, stamp_file
 from vhb.recordmode import serve
+from vhb.scorer import SCORECARD, ReplayDiverged, markdown_table, render
 from vhb.taxonomy import ExploitClass
-from vhb.trajectory import Label, Meta, Origin, read_trajectory
+from vhb.trajectory import Label, Meta, Origin, read_trajectory, write_text
 
 TRAJECTORIES: Final = Path("trajectories")
 
@@ -45,6 +47,22 @@ def cmd_probes(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_score(args: argparse.Namespace) -> int:
+    """Exit 0 on success, 1 when --check finds a mismatch, 2 when a trajectory diverges."""
+    try:
+        text = render(trajectory_files([]))
+    except ReplayDiverged as error:
+        print(f"error: {error} - no scorecard written")
+        return 2
+    if args.check:
+        same = SCORECARD.exists() and SCORECARD.read_bytes() == text.encode("utf-8")
+        print(f"{SCORECARD}: " + ("reproduced byte for byte" if same else "MISMATCH"))
+        return 0 if same else 1
+    write_text(SCORECARD, text)
+    print(markdown_table(json.loads(text)), end="")
+    return 0
+
+
 def cmd_serve(args: argparse.Namespace) -> int:
     exploit_class = ExploitClass(args.exploit_class) if args.exploit_class else None
     meta = Meta(args.task, Label(args.label), Origin.HUMAN, exploit_class, args.rationale)
@@ -66,6 +84,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     probes = commands.add_parser("probes", help="write the three generic probes for every task")
     probes.set_defaults(run=cmd_probes)
+
+    score = commands.add_parser("score", help="replay all, run both verifiers, write scorecard")
+    score.add_argument("--check", action="store_true",
+                       help="compare a fresh scorecard with the committed one; write nothing")
+    score.set_defaults(run=cmd_score)
 
     serve_ = commands.add_parser("serve", help="record a trajectory by clicking in a browser")
     serve_.add_argument("--task", required=True)

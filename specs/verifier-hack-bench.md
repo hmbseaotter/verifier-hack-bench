@@ -271,30 +271,30 @@ scorecard mismatch all exit non-zero with the file and field named.
 - [x] [P1] AC-07: every committed trajectory validates; every exploit has exactly one class from the five and a non-empty rationale; each of the five classes has at least one targeted exploit (covers R-05, R-06).
 - [x] [P1] AC-08: probe generation yields exactly three probes per task with the classes of the probe table, and regenerating them yields byte-identical files (covers R-19).
 - [x] [P1] AC-09: every task instruction ends with the infeasibility protocol sentence (covers R-09).
-- [ ] [P2] AC-10: for every task, the hardened targeted hack count is strictly lower than the naive targeted hack count (covers R-20).
-- [ ] [P2] AC-11: the scorecard's `over_blocking` list is empty, or every entry is named in the README (covers R-28).
-- [ ] [P2] AC-12: the scorecard's `residual` list is non-empty and every entry carries class and rationale (covers R-29).
-- [ ] [P2] AC-13: two scorer runs produce byte-identical output, and `score --check` exits zero against the committed scorecard (covers R-21, R-33).
-- [ ] [P2] AC-14: refuse-only fails the hardened verifier of every feasible task, and on the infeasible task only answers declaring infeasibility with protected state unchanged pass the hardened verifier (covers R-23, R-24).
+- [x] [P2] AC-10: for every task, the hardened targeted hack count is strictly lower than the naive targeted hack count (covers R-20).
+- [x] [P2] AC-11: the scorecard's `over_blocking` list is empty, or every entry is named in the README (covers R-28).
+- [x] [P2] AC-12: the scorecard's `residual` list is non-empty and every entry carries class and rationale (covers R-29).
+- [x] [P2] AC-13: two scorer runs produce byte-identical output, and `score --check` exits zero against the committed scorecard (covers R-21, R-33).
+- [x] [P2] AC-14: refuse-only fails the hardened verifier of every feasible task, and on the infeasible task only answers declaring infeasibility with protected state unchanged pass the hardened verifier (covers R-23, R-24).
 
 ### edge cases
 - [x] [P0] AC-15: a trajectory with one altered state digest replays with the altered step's index reported as the first divergence (covers R-18).
 - [x] [P0] AC-16: actions whose path is an absolute URL, a scheme-relative `//host` path, or a relative path are refused without execution (covers R-25).
-- [ ] [P0] AC-17: no float appears anywhere in a snapshot, a trajectory, or the scorecard (covers R-02).
+- [x] [P0] AC-17: no float appears anywhere in a snapshot, a trajectory, or the scorecard (covers R-02).
 - [x] [P1] AC-18: each invalid trajectory shape named in R-26 is rejected with the file and the field named (covers R-26).
-- [ ] [P2] AC-19: a verifier that raises is scored as failed with the exception type in the reasons (covers R-30, R-37).
-- [ ] [P2] AC-20: the tampering exploits fail the hardened verifiers with a reason naming the protected state that changed (covers R-10, R-37).
-- [ ] [P2] AC-21: altering one byte of a trajectory's content changes its fingerprint and makes `score --check` exit non-zero (covers R-14).
-- [ ] [P2] AC-22: a diverging trajectory makes the scorer exit non-zero and leaves the committed scorecard untouched (covers R-20).
+- [x] [P2] AC-19: a verifier that raises is scored as failed with the exception type in the reasons (covers R-30, R-37).
+- [x] [P2] AC-20: the tampering exploits fail the hardened verifiers with a reason naming the protected state that changed (covers R-10, R-37).
+- [x] [P2] AC-21: altering one byte of a trajectory's content changes its fingerprint and makes `score --check` exit non-zero (covers R-14).
+- [x] [P2] AC-22: a diverging trajectory makes the scorer exit non-zero and leaves the committed scorecard untouched (covers R-20).
 
 ### constraint validation
 - [x] [P0] AC-23: `mypy --strict src` exits zero, and every record type is a frozen dataclass (covers R-35).
 - [x] [P0] AC-24: `serve` binds 127.0.0.1 (covers R-32).
 - [x] [P1] AC-25: verifier modules import only the standard library and the package's own record, task, and taxonomy modules; each verifier returns equal verdicts on repeated calls; the verifier input type has no label, class, origin, or rationale field (covers R-07).
-- [ ] [P2] AC-26: scoring completes with socket creation patched to raise, and no module under `src/` imports an HTTP client or a model SDK (covers R-12).
-- [ ] [P2] AC-27: the scorecard holds only passed/total integer pairs for results and has no timestamp, host, path, or version field (covers R-13).
-- [ ] [P2] AC-28: both verifiers receive the identical verifier input object for a given trajectory (covers R-11).
-- [ ] [P2] AC-29: source under `src/` totals at most 1,500 physical lines (covers R-36).
+- [x] [P2] AC-26: scoring completes with socket creation patched to raise, and no module under `src/` imports an HTTP client or a model SDK (covers R-12).
+- [x] [P2] AC-27: the scorecard holds only passed/total integer pairs for results and has no timestamp, host, path, or version field (covers R-13).
+- [x] [P2] AC-28: both verifiers receive the identical verifier input object for a given trajectory (covers R-11).
+- [x] [P2] AC-29: source under `src/` totals at most 1,500 physical lines (covers R-36).
 - [ ] [P2] AC-30: every `AC-nn` identifier in this specification is referenced by at least one test, and every `R-nn` identifier is named in the covers clause of at least one acceptance criterion (covers R-40).
 - [ ] [P3] AC-31: the README's opening paragraph contains the limits statement, the README names every `residual` and `over_blocking` entry, and its scorecard table equals the table generated from `scorecard.json` (covers R-38).
 - [ ] [P3] AC-32: the CI workflow defines the two-OS by two-Python matrix and runs lint, type-check, tests, and `score --check`; `.gitattributes` holds `* text=auto eol=lf` (covers R-34).
