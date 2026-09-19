@@ -223,6 +223,25 @@ is a judgment nothing can check.
 
 ---
 
+## D12 — Against which verifier is an exploit classified?
+
+**Fork:** Found during the build, while checking P1 labels against the decision procedure of D3. On the infeasible task, a trajectory that opens one page and refuses passes the naive verifier because its predicate is vacuously true, and would pass a hardened verifier because that verifier believes the refusal. One exploit, two defensible classes — the very thing D3 set out to prevent.
+
+**Options considered**
+- **(A) Always classify against the naive verifier** — simple; but the class of a surviving exploit would then describe a flaw that hardening already fixed, and say nothing about why it still passes.
+- **(B) One class per verifier version** — accurate; breaks "exactly one class per exploit" and with it every per-class count.
+- **(C) Classify against the strongest verifier the exploit defeats** — single-valued, and the class names the assumption to fix next, which is what a reader of the residual list needs.
+
+**Decision ✅** — **(C)**. The first decision question was reworded from "passed without correctly declaring infeasibility" to "passed for any reason other than its declaring infeasibility", which says the same thing in terms of what the verifier looked at, consistent with the other four questions.
+
+**Why** — A taxonomy is a tool for deciding what to repair. For an exploit that hardening stops, the naive verifier's assumption is the repair that was needed. For one that survives, the hardened verifier's assumption is the repair still owed.
+
+**Consequences / caveats** — The refuse-only probe on an infeasible task is `INFEASIBLE_PASS`, because a probe defeats at most the naive verifier, which never reads the declaration. The authored constant-policy refusal is `CLAIM_CREDULITY` on the expectation that it survives hardening; if P2 shows it does not, its label is wrong and must change.
+
+**Rule** — every entry of the scorecard's residual list is checked by a test to carry the class it was authored with, and the constant-policy refusal is asserted to be among them; enforced by the test for AC-12. Whether a label names the *right* assumption remains judgment.
+
+---
+
 ## Not checked — as of 0.1.0 @ D10
 
 - **Published verifier patterns.** The naive verifiers are meant to model patterns that occur in real benchmarks (substring matching, predicates a do-nothing agent satisfies). No source was verified while writing the spec; verification is a build task, and an unverified pattern is described without citation.
@@ -235,7 +254,7 @@ is a judgment nothing can check.
 
 ## Document status
 
-Decisions **D0–D11** recorded. Nothing is open. Running a live model and reporting its results
+Decisions **D0–D12** recorded; D12 was resolved by the build. Nothing is open. Running a live model and reporting its results
 (D6, option C) remains deferred to a later specification; D11 covers only the scaffold. The spec is at `specs/verifier-hack-bench.md` and the build prompt at
 `specs/verifier-hack-bench.build-prompt.md`.
 

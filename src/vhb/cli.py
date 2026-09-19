@@ -1,4 +1,4 @@
-"""Command line: python -m vhb record | replay | serve."""
+"""Command line: python -m vhb record | replay | probes | serve."""
 from __future__ import annotations
 
 import argparse
@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Final
 
+from vhb.probes import write_probes
 from vhb.record import replay, stamp_file
 from vhb.recordmode import serve
 from vhb.taxonomy import ExploitClass
@@ -38,6 +39,12 @@ def cmd_replay(args: argparse.Namespace) -> int:
     return 1 if failures else 0
 
 
+def cmd_probes(args: argparse.Namespace) -> int:
+    for path in write_probes(TRAJECTORIES):
+        print(f"wrote {path.as_posix()}")
+    return 0
+
+
 def cmd_serve(args: argparse.Namespace) -> int:
     exploit_class = ExploitClass(args.exploit_class) if args.exploit_class else None
     meta = Meta(args.task, Label(args.label), Origin.HUMAN, exploit_class, args.rationale)
@@ -56,6 +63,9 @@ def build_parser() -> argparse.ArgumentParser:
     replay_ = commands.add_parser("replay", help="replay trajectories and compare every stamp")
     replay_.add_argument("paths", nargs="*", type=Path)
     replay_.set_defaults(run=cmd_replay)
+
+    probes = commands.add_parser("probes", help="write the three generic probes for every task")
+    probes.set_defaults(run=cmd_probes)
 
     serve_ = commands.add_parser("serve", help="record a trajectory by clicking in a browser")
     serve_.add_argument("--task", required=True)
