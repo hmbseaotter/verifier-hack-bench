@@ -5,6 +5,10 @@ description = "A red-team harness that measures how often a task verifier can be
 requires-python = ">=3.11"
 dependencies = ["flask>=3.0,<4"]
 
+[project.optional-dependencies]
+# Only for live/run_agent.py. The bench, its tests, and CI never install or import it.
+live = ["anthropic>=1.0"]
+
 [dependency-groups]
 dev = ["pytest>=8", "mypy>=1.11", "ruff>=0.6"]
 
@@ -21,7 +25,7 @@ pythonpath = ["."]
 
 [tool.mypy]
 strict = true
-files = ["src"]
+files = ["src", "live"]
 
 [tool.ruff]
 line-length = 100

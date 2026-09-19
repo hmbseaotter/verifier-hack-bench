@@ -242,6 +242,26 @@ is a judgment nothing can check.
 
 ---
 
+## D13 — Three choices inside the live runner
+
+**Fork:** Building P4 raised three questions the specification had not settled: which model is the default, what happens when the model refuses, and how a model-produced run is marked.
+
+**Options considered**
+- **(A) Default to a mid-tier model, as the specification first said** — cheaper per run; but it is a cost decision made on the owner's behalf, and the provider's current guidance is explicit that the default is `claude-opus-5` unless the user names another model.
+- **(B) Default to `claude-opus-5`, overridable with `--model`** — follows that guidance and leaves cost to the owner.
+- **(C) On a refusal, fall back to another model server-side** — the provider's recommended default for application code; but here the model *is* the subject of the measurement, and a run silently finished by a different model is a contaminated data point.
+- **(D) On a refusal, end the episode and record the stop reason** — loses the run; keeps the data honest.
+
+**Decision ✅** — **(B)** and **(D)**. Live output is written with label `unreviewed` and origin `model`.
+
+**Why** — A harness that measures a model must not quietly substitute another one. And the choice of how much to spend is not the builder's to make.
+
+**Consequences / caveats** — `model` is deliberately outside the origin enumeration, so no model run can enter the scored set until a later specification adds it and says how such runs are counted. Declining the provider's fallback default is a deviation from its guidance, made for a stated reason; the owner may overrule it. The model-backed policy has never been executed: no test may construct it, so its first real run is also its first test.
+
+**Rule** — the runner refuses without the flag and the key, and no test constructs the model-backed policy; enforced by the tests for AC-35 and AC-37. That the model-backed policy *works* is not checkable without spending money, and is unverified.
+
+---
+
 ## Not checked — as of 0.1.0 @ D10
 
 - **Published verifier patterns.** The naive verifiers are meant to model patterns that occur in real benchmarks (substring matching, predicates a do-nothing agent satisfies). No source was verified while writing the spec; verification is a build task, and an unverified pattern is described without citation.
@@ -254,7 +274,7 @@ is a judgment nothing can check.
 
 ## Document status
 
-Decisions **D0–D12** recorded; D12 was resolved by the build. Nothing is open. Running a live model and reporting its results
+Decisions **D0–D13** recorded; D12 and D13 were resolved by the build. Nothing is open. Running a live model and reporting its results
 (D6, option C) remains deferred to a later specification; D11 covers only the scaffold. The spec is at `specs/verifier-hack-bench.md` and the build prompt at
 `specs/verifier-hack-bench.build-prompt.md`.
 

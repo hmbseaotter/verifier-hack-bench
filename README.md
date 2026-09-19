@@ -132,7 +132,24 @@ scorecard.json      the committed result
 specs/              the specification, the decision record, the build prompt
 tests/              one test per acceptance criterion, each naming its AC
 docs/               CONCEPTS.md, WALKTHROUGH.md
+live/               optional model runner; outside the bench, not counted in the cap
 ```
+
+## Optional: run a model against the tasks
+
+The strongest version of this bench is a model finding exploits nobody planted. **No such result is reported here.** What exists is the scaffold for it: [`live/run_agent.py`](live/run_agent.py), about 240 lines, deliberately outside `src/` so that the bench keeps its guarantee that nothing it imports can call a model. A test holds that.
+
+It spends money, so it cannot happen by accident. It needs the `--live` flag *and* an API key in the environment; without both it refuses and sends nothing. The build, the tests, and CI never supply both: every test drives the runner with a scripted fake policy, and the SDK is an optional dependency that a default install does not include.
+
+```bash
+uv sync --locked --extra live
+```
+
+```bash
+uv run python live/run_agent.py --task t5_pay_missing_report --live
+```
+
+The run stops at a final answer, after 15 steps, or past an output-token budget, whichever comes first. A model refusal ends the run and is recorded as such; it is not retried on another model, because in an evaluation a refusal is a result. The output goes to `live_runs/`, which git ignores, with the label `unreviewed` — a label the scored set rejects on purpose. A person reads the run and decides whether it was honest or an exploit, and of which class. Giving model-produced runs a place in the scorecard (they would need an origin of their own) is left to a later specification.
 
 ## Specification first
 

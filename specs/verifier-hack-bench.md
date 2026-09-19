@@ -10,8 +10,8 @@ ends with an identifier `(R-nn)`; every acceptance criterion starts with `AC-nn`
 requirements it covers.
 
 ## metadata
-- Spec version: 0.2.2
-- Status: IN-BUILD
+- Spec version: 0.2.3
+- Status: BUILT
 - Last updated: 2026-09-19
 - Author(s): repository owner (hmbseaotter), interviewed and drafted by Claude via /specify
 - Target type: library/service (Python library plus CLI harness)
@@ -98,7 +98,7 @@ n/a (not an agent) — the environment is rebuilt from seed constants on every r
 - Deterministic (plain code, NO LLM): everything under `src/`. Environment, recorder, replayer, verifiers, probes, scorer, fingerprints, README table generation. Zero model calls in phases P0 to P3, and zero model calls by the build or the tests in P4.
 - Type & value discipline: all of `src/` passes `mypy --strict`; trajectory, step, verdict, and task records are frozen dataclasses; module constants are `typing.Final`; taxonomy classes and labels are enums; money is integer cents and never float.
 - Requires judgment (LLM): nothing in the bench. Human judgment enters only through authored labels and rationales in trajectory files, which the scorer loads and never derives (D5). In the P4 live runner the one judgment task is the agent's own policy: choosing the next action.
-- Model tier per judgment task: agent policy → the owner's choice through `--model`, defaulting to a mid-tier model, because the point of a live run is to see whether an ordinary capable agent finds exploits, not to buy the strongest one.
+- Model tier per judgment task: agent policy → the owner's choice through `--model`. The default is `claude-opus-5`, following the provider's current guidance not to choose a cheaper tier on the user's behalf; what a run costs is the owner's decision (D13).
 - Cost / budget guardrails: step limit 15 and an output-token cap per episode, both overridable by flag; one episode per invocation.
 - Stop / escalate when: a limit is reached → write the partial trajectory as `unreviewed` and exit non-zero.
 
@@ -295,14 +295,14 @@ scorecard mismatch all exit non-zero with the file and field named.
 - [x] [P2] AC-27: the scorecard holds only passed/total integer pairs for results and has no timestamp, host, path, or version field (covers R-13).
 - [x] [P2] AC-28: both verifiers receive the identical verifier input object for a given trajectory (covers R-11).
 - [x] [P2] AC-29: source under `src/` totals at most 1,500 physical lines (covers R-36).
-- [ ] [P2] AC-30: every `AC-nn` identifier in this specification is referenced by at least one test, and every `R-nn` identifier is named in the covers clause of at least one acceptance criterion (covers R-40).
+- [x] [P2] AC-30: every `AC-nn` identifier in this specification is referenced by at least one test, and every `R-nn` identifier is named in the covers clause of at least one acceptance criterion (covers R-40).
 - [x] [P3] AC-31: the README's opening paragraph contains the limits statement, the README names every `residual` and `over_blocking` entry, and its scorecard table equals the table generated from `scorecard.json` (covers R-38).
 - [x] [P3] AC-32: the CI workflow defines the two-OS by two-Python matrix and runs lint, type-check, tests, and `score --check`; `.gitattributes` holds `* text=auto eol=lf` (covers R-34).
 - [x] [P3] AC-33: no tracked file contains an absolute local path, a user-home path, or a credential pattern (covers R-39).
-- [ ] [P4] AC-34: an episode driven by the scripted fake policy is written under `live_runs/` with label `unreviewed`, replays with no divergence, and is rejected by scored-set validation until relabeled (covers R-41).
-- [ ] [P4] AC-35: no module under `src/` imports `live`, and no test references the model-backed policy except to assert that it refuses (covers R-42).
-- [ ] [P4] AC-36: the runner stops at the step limit with a non-zero exit and a written partial trajectory, and exits zero when the policy returns a final answer (covers R-43).
-- [ ] [P4] AC-37: without `--live`, or without the API key variable, the runner exits non-zero with socket creation patched to raise, and the key value never appears in any written file or captured output (covers R-44, R-45).
+- [x] [P4] AC-34: an episode driven by the scripted fake policy is written under `live_runs/` with label `unreviewed`, replays with no divergence, and is rejected by scored-set validation until relabeled (covers R-41).
+- [x] [P4] AC-35: no module under `src/` imports `live`, and no test references the model-backed policy except to assert that it refuses (covers R-42).
+- [x] [P4] AC-36: the runner stops at the step limit with a non-zero exit and a written partial trajectory, and exits zero when the policy returns a final answer (covers R-43).
+- [x] [P4] AC-37: without `--live`, or without the API key variable, the runner exits non-zero with socket creation patched to raise, and the key value never appears in any written file or captured output (covers R-44, R-45).
 
 ---
 
@@ -366,6 +366,9 @@ All reviewed and confirmed by the owner on 2026-09-19, and folded into prior dec
 
 ## decisions made
 - P1: an exploit is classified against the strongest verifier it defeats, and the first decision question was reworded to match; the refuse-only probe on an infeasible task is therefore `INFEASIBLE_PASS` (D12).
+- P4: the runner's default model is `claude-opus-5`; a model refusal ends the episode and is recorded, with no fallback to another model; live output carries origin `model`, a value outside the origin enumeration, so a later specification must add it before any model run can be scored (D13).
+- P0: redirect and error responses are written by the application rather than by the framework, so that no recorded response hash depends on the framework's version. No fork: the alternative would have broken byte-identical replay for anyone off the lock file.
+- P2: a test-only set of five over-strict verifiers demonstrates that the honest control can fail. It adds no source under `src/`.
 
 ---
 
@@ -375,6 +378,7 @@ All reviewed and confirmed by the owner on 2026-09-19, and folded into prior dec
 ---
 
 ## changelog
+- 0.2.3 (2026-09-19): phase 4 built; default model corrected to `claude-opus-5`; D13 recorded; status BUILT. Phase 4 is built and tested but not committed: its commit message awaits the owner's approval.
 - 0.2.2 (2026-09-19): wording only — two assumption lines rephrased for public-repository hygiene.
 - 0.2.1 (2026-09-19): taxonomy made single-valued across verifier versions — classify against the strongest verifier defeated; first decision question reworded; probe table corrected (D12). Found while checking P1 labels against the decision procedure.
 - 0.2.0 (2026-09-19): assumptions gate cleared and folded into prior decisions; phase 4 (live-model scaffold, no spend) added at the owner's selection, with R-41 to R-45, AC-34 to AC-37, and D11; status IN-BUILD.

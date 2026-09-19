@@ -217,7 +217,6 @@ def test_the_source_stays_small_enough_to_read_in_ten_minutes() -> None:
     assert lines <= 1500, f"src/ has {lines} physical lines; the cap is 1,500"
 
 
-@pytest.mark.xfail(strict=True, reason="passes once the P3 and P4 criteria have tests; remove then")
 def test_every_criterion_has_a_test_and_every_requirement_has_a_criterion() -> None:
     """AC-30"""
     spec = (ROOT / "specs" / "verifier-hack-bench.md").read_text(encoding="utf-8")
