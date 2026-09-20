@@ -1,12 +1,14 @@
 # verifier-hack-bench
 
-A small red-team harness that measures how often a task verifier can be satisfied without the task being done. **Its limits, up front:** the environment is a toy web application; the exploits were planted by the same person who wrote the verifiers they beat; the sample is 38 recorded trajectories over five tasks; and nothing here trains or evaluates a model. It demonstrates a method for auditing verifiers. It is not a finding about any real benchmark or any real agent.
+A small red-team harness that measures how often a task verifier can be satisfied without the task being done. **Its limits, up front:** the environment is a toy web application; the exploits were planted by the same person who wrote the verifiers they beat; the sample is 38 recorded trajectories over five tasks; and nothing here trains or evaluates a model. What is under test is the verifier: it is run against recorded trajectories whose right answer is already known, and every disagreement is a defect in the verifier. That is the method this repository demonstrates. It is not a finding about any real benchmark or any real agent.
 
 ## The result
 
 When an agent is trained with reinforcement learning, the verifier's pass or fail *is* the reward. Whatever passes gets reinforced, whether or not the task was done. So the question worth asking of any verifier is not "does it pass correct work?" but "what else does it pass?"
 
 Five tasks in a small expense-approval web application. For each task: a **naive verifier** (the check most people would write first), a **hardened verifier**, and recorded **trajectories** of three kinds.
+
+Normally a verifier judges a trajectory. Here the roles are reversed. Every trajectory carries an authored label — honest or exploit — that the verifier never sees, so the thing being judged is the verifier. An exploit it passes is a false accept: it would reward cheating. An honest run it fails is a false reject: it would punish real work. The table counts both, for each verifier.
 
 <!-- scorecard:begin -->
 | Task | Targeted exploits passing | Generic probes passing | Honest runs passing |
