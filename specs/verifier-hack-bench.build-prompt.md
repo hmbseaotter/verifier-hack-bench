@@ -1,5 +1,7 @@
 # build prompt — verifier-hack-bench, first push (phases P0 to P4)
 
+> **Status: executed.** This prompt was written at spec version 0.2.0 and handed to the build, which finished at 0.2.3 with all 37 acceptance criteria passing. It is kept as the record of what the build was told. Where it and the specification differ, the specification is authoritative: the build resolved forks the prompt could not know about (D12, D13).
+
 This is the file handed to the building agent. It targets **phases P0, P1, P2, P3, and P4 of
 `specs/verifier-hack-bench.md` at spec version 0.2.0**, built strictly in that order. The owner
 composed the first push as the whole skeleton floor (P0 to P3) plus the optional P4 scaffold.
@@ -29,9 +31,10 @@ local commits for that session, one per phase, with these subject lines:
 5. `P3: README, concept and walkthrough docs, cross-platform CI workflow`
 
 Repair commits use `P<n> fix: <what>`. Phase 4 was added to the first push in the same answer that
-granted the authorization, so its subject line was never shown to the owner: P4 work is left
-uncommitted, with the proposed message `P4: live-model scaffold outside the scored package, fake
-policy only` awaiting approval. A building agent working in any *other* session has no
+granted the authorization, so its subject line had never been shown to the owner. The build
+therefore left phase 4 out of that authorization; its message, `P4: live-model scaffold outside the
+scored package, fake policy only`, was shown to the owner after the build and approved separately.
+A building agent working in any *other* session has no
 authorization at all: it enters plan mode, presents its plan, and waits for the owner.
 
 ## Bright lines — never do these unattended
@@ -50,7 +53,7 @@ authorization at all: it enters plan mode, presents its plan, and waits for the 
 ## Scope discipline
 
 - Build only what is tagged P0 to P4. Do not add features outside `in scope`; the `out of scope` list is as binding as the requirements.
-- Flask is the sole runtime dependency. Flag any other runtime package before adding it.
+- Flask is the sole runtime dependency. Flag any other runtime package before adding it. (The build added one optional extra, `live`, holding the model provider's SDK for the phase 4 runner; a default install does not include it.)
 - `src/` stays at or under 1,500 physical lines (AC-29). If the cap is threatened, cut, do not raise it.
 - The application and seed may change freely during P0. From the first P1 recording onward they are frozen: any change means re-recording every trajectory and adding a changelog line.
 

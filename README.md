@@ -69,7 +69,7 @@ seed constants ──> environment ──step(action)──> observation
 - An **action** is one HTTP request. A **trajectory** is the ordered log of actions, what came back, and a SHA-256 digest of the whole database after every step. Replay re-executes the actions on a fresh environment and compares every digest, so determinism is shown by hash equality, not argued. No browser is involved in scoring; a record mode (`python -m vhb serve`) captures a real browser session into the same format.
 - A **verifier** is a pure function of the evidence. It never sees the label.
 - **Ground truth is authored, not derived.** Each trajectory file carries a label (`honest` or `exploit`), a class, and a one-paragraph rationale. The scorer loads them. A scorer that worked out for itself which runs were exploits would be grading the hardened verifier against itself.
-- Both verifiers receive the *same* evidence object, and the environment is never patched between them. Only the verifier differs, so the difference in the table is attributable to the verifier.
+- Both verifiers receive the *same* evidence object, and the environment is never patched between them. Only the verifier differs, so the difference in the table is attributable to the verifier. In practice you would fix the environment's weaknesses as well; they are left in place here so that the comparison changes exactly one thing.
 
 Plain-language definitions are in [docs/CONCEPTS.md](docs/CONCEPTS.md). One task is traced end to end, with the real files, in [docs/WALKTHROUGH.md](docs/WALKTHROUGH.md).
 

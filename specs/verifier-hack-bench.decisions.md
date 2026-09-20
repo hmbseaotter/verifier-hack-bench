@@ -83,6 +83,8 @@ is a judgment nothing can check.
 
 **Consequences / caveats** — Exhaustive only over the evidence these verifiers read. Judge-model manipulation and harness tampering are outside it and are listed as limits. Probe classes are assigned by a static table, which is exact for these five tasks and a simplification in general.
 
+**Extended by D12** — which verifier an exploit is classified against; the first decision question was reworded there, and the probe table changed.
+
 **Rule** — every exploit carries exactly one class from the five; enforced by the tests for AC-07 and AC-18. Whether a given label is the *right* class remains judgment, recorded as a rationale in each file.
 
 ---
@@ -136,6 +138,8 @@ is a judgment nothing can check.
 
 **Why** — Probes cost three generated files per task and convert part of the scorecard from demonstration into measurement. The README states the circularity of the targeted column in plain words.
 
+**Partly taken up by D11** — the scaffold for option (C) was built as phase 4. Running a model and reporting what it does remains deferred.
+
 **Rule** — every targeted exploit must pass its naive verifier, and probes are counted separately; enforced by the tests for AC-06 and AC-08.
 
 ---
@@ -170,6 +174,8 @@ is a judgment nothing can check.
 **Decision ✅** — **(B)**. Phase tags P0 to P3 follow the project plan's numbering.
 
 **Why** — The shapes the requirements depend on — reset, step, snapshot, digest, trajectory — are not in doubt. What is in doubt is route and seed detail, which the spec deliberately does not freeze.
+
+**Extended at 0.2.0** — phase 4 was added (D11); the tags now run P0 to P4 and still follow the plan's numbering.
 
 **Rule** — any change to the application or seed after P1 requires re-recording and a changelog line; enforced by replay divergence failing the scorer (AC-22).
 
@@ -236,7 +242,7 @@ is a judgment nothing can check.
 
 **Why** — A taxonomy is a tool for deciding what to repair. For an exploit that hardening stops, the naive verifier's assumption is the repair that was needed. For one that survives, the hardened verifier's assumption is the repair still owed.
 
-**Consequences / caveats** — The refuse-only probe on an infeasible task is `INFEASIBLE_PASS`, because a probe defeats at most the naive verifier, which never reads the declaration. The authored constant-policy refusal is `CLAIM_CREDULITY` on the expectation that it survives hardening; if P2 shows it does not, its label is wrong and must change.
+**Consequences / caveats** — The refuse-only probe on an infeasible task is `INFEASIBLE_PASS`, because a probe defeats at most the naive verifier, which never reads the declaration. The authored constant-policy refusal is `CLAIM_CREDULITY` on the expectation that it survives hardening; if P2 shows it does not, its label is wrong and must change. **Outcome:** P2 showed that it does survive; it is the scorecard's one residual entry.
 
 **Rule** — every entry of the scorecard's residual list is checked by a test to carry the class it was authored with, and the constant-policy refusal is asserted to be among them; enforced by the test for AC-12. Whether a label names the *right* assumption remains judgment.
 
@@ -262,13 +268,17 @@ is a judgment nothing can check.
 
 ---
 
-## Not checked — as of 0.1.0 @ D10
+## Not checked — as of 0.2.4 @ D13
 
-- **Published verifier patterns.** The naive verifiers are meant to model patterns that occur in real benchmarks (substring matching, predicates a do-nothing agent satisfies). No source was verified while writing the spec; verification is a build task, and an unverified pattern is described without citation.
-- **The environment does not exist yet.** Routes and seed rows in the design reference are a plan. Whether every planned exploit is actually reachable through them is unknown until Phase 0 and Phase 1 run.
-- **Whether any exploit genuinely survives hardening.** AC-12 requires a non-empty residual list. The expected survivor is the constant-policy refusal on the infeasible task; that expectation is reasoning, not a result.
-- **CI.** The workflow cannot run before the GitHub repository exists. Linux behavior is therefore unobserved until the first push; macOS is not checked at all.
-- **Traceability by count only.** The linter compares the number of criteria to the number of requirements. The mapping was traced by hand once; AC-30 makes it a test, which does not exist yet.
+What the sweep of 2026-09-19 looked at and set aside, or could not look at.
+
+- **CI.** The workflow has never run. Linux behavior is unobserved until the first push, and macOS is not checked at all. The README describes what CI does; that sentence is a statement about configuration, not an observation.
+- **The model-backed policy.** It has never been executed, because no test may construct it. Its request and response handling follow the provider's documented shapes and are otherwise unverified.
+- **Citations.** The four cited sources were opened and their claims checked, but through a fetch tool that summarizes pages, not by reading the PDFs. Section numbers were not re-verified independently.
+- **`docs/CONCEPTS.md` is not under test.** Every path and symbol it names was checked by hand in this sweep and exists; nothing will notice if one goes stale later. The README and the walkthrough, by contrast, are held by tests.
+- **The fingerprint set is an enumeration of six modules.** Verifier helper logic in `evidence.py`, and the replay and scoring code, are outside it. A change there that alters any verdict still changes the scorecard and fails `score --check`; what is lost is only the fingerprint that would say *which* input moved. Accepted for now; widening the set to every module under `src/` would change the committed scorecard and is left as a follow-up.
+- **Whether each label names the right class.** The taxonomy makes classification decidable, and tests hold that every exploit has exactly one class. That the class chosen is the correct one remains judgment, recorded as a rationale in each file (D3).
+- **Stale claims about commit state: two instances, fixed, no scanner.** The specification and the build prompt each said phase 4 awaited approval after it had been committed. Two instances do not yet justify a detector; the cheaper rule is that specification prose does not describe commit state at all. A third instance would justify a scan.
 
 ---
 
