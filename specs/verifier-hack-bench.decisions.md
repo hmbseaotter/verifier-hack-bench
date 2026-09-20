@@ -291,7 +291,7 @@ is a judgment nothing can check.
 
 What the sweep of 2026-09-19 looked at and set aside, or could not look at.
 
-- **CI.** The workflow has never run. Linux behavior is unobserved until the first push, and macOS is not checked at all. The README describes what CI does; that sentence is a statement about configuration, not an observation.
+- **CI.** The workflow has never run. Linux behavior is unobserved until the first push, and macOS is not checked at all. The README describes what CI does; that sentence is a statement about configuration, not an observation. *Update, 2026-09-20: the workflow has since run. Lint, type-check, tests, scorecard reproduction, and replay pass on Ubuntu and Windows under Python 3.11 and 3.14, so Linux behavior is now observed. macOS remains unchecked.*
 - **The model-backed policy.** It has never been executed, because no test may construct it. Its request and response handling follow the provider's documented shapes and are otherwise unverified.
 - **Citations.** The four cited sources were opened and their claims checked, but through a fetch tool that summarizes pages, not by reading the PDFs. Section numbers were not re-verified independently.
 - **`docs/CONCEPTS.md` is not under test.** Every path and symbol it names was checked by hand in this sweep and exists; nothing will notice if one goes stale later. The README and the walkthrough, by contrast, are held by tests.
