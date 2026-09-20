@@ -73,6 +73,11 @@ def test_ci_runs_every_gate_on_both_systems_and_line_endings_are_pinned() -> Non
     for needle in ("ubuntu-latest", "windows-latest", '"3.11"', '"3.14"', "uv sync --locked",
                    "ruff check", "mypy", "pytest", "vhb score --check"):
         assert needle in workflow, needle
+    # The first CI run failed before any code ran, on a floating major tag that does not exist.
+    # Only GitHub's own actions are trusted to publish one; everything else is pinned exactly.
+    for action, ref in re.findall(r"uses:\s*([\w.-]+/[\w./-]+)@(\S+)", workflow):
+        exact = re.fullmatch(r"v\d+\.\d+\.\d+|[0-9a-f]{40}", ref)
+        assert exact or action.startswith("actions/"), f"{action}@{ref} is a floating reference"
     assert "* text=auto eol=lf" in (ROOT / ".gitattributes").read_text(encoding="utf-8")
 
 
