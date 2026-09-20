@@ -155,6 +155,10 @@ The run stops at a final answer, after 15 steps, or past an output-token budget,
 
 The [specification](specs/verifier-hack-bench.md) was written, and committed, before any code: 45 requirements in EARS form and 37 acceptance criteria, each criterion referenced by identifier from at least one test (a test checks that, too). The [decision record](specs/verifier-hack-bench.decisions.md) keeps the options that were *rejected* and names the test that enforces each decision. The specification and the code were drafted with an AI coding assistant, from an interview with the repository owner; the git history shows the order.
 
+## License
+
+MIT. See [LICENSE](LICENSE).
+
 ## References
 
 1. S. Zhou et al., "WebArena: A Realistic Web Environment for Building Autonomous Agents," arXiv:2307.13854, 2023. The `must_include` check is in `evaluation_harness/evaluators.py` of the WebArena repository.

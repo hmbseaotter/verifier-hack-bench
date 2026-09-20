@@ -3,6 +3,8 @@ name = "verifier-hack-bench"
 version = "0.1.0"
 description = "A red-team harness that measures how often a task verifier can be satisfied without the task being done."
 requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
 dependencies = ["flask>=3.0,<4"]
 
 [project.optional-dependencies]

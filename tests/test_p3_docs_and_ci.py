@@ -60,6 +60,13 @@ def test_walkthrough_excerpts_are_the_real_source_and_the_real_seed() -> None:
         assert list((ROOT / "trajectories").rglob(f"{run}.json")), run
 
 
+def test_the_license_is_the_one_the_documents_name() -> None:
+    """Decision D14: one license, named the same way everywhere it is named."""
+    assert (ROOT / "LICENSE").read_text(encoding="utf-8").startswith("MIT License\n")
+    assert 'license = "MIT"' in (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    assert "## License\n\nMIT. See [LICENSE](LICENSE)." in README
+
+
 def test_ci_runs_every_gate_on_both_systems_and_line_endings_are_pinned() -> None:
     """AC-32. The workflow itself can only be observed after the first push."""
     workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")

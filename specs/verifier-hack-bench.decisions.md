@@ -268,6 +268,25 @@ is a judgment nothing can check.
 
 ---
 
+## D14 — Which license?
+
+**Fork:** The specification first recorded "no LICENSE file", as an assumption the owner confirmed. The sweep at 0.2.4 found that assumption rested on a false fact, and reopened it. Which license, if any?
+
+**Options considered**
+- **(A) MIT** — what most of the owner's licensed public repositories use, including the toolkit that produced this specification. One short file; explicit permission to run, fork, and reuse.
+- **(B) Apache-2.0 for code with CC BY 4.0 for documentation, plus a NOTICE file** — the owner's most deliberate pattern, used once, in a repository adjacent to patented work, where an explicit patent grant earns its place. Nothing here touches a patent.
+- **(C) No license** — what the specification first said. All rights reserved by default: anyone may read the code, and a careful engineer at a company may not be allowed to run it.
+
+**Decision ✅** — **(A)**, chosen by the owner.
+
+**Why** — The point of publishing is that someone may want to try it. Option (C) was never really chosen: it was confirmed on the strength of a check that queried a field which does not exist, and so reported "none" for every repository it was asked about.
+
+**Consequences / caveats** — That check failed in the way this repository is about: a predicate that returns the same answer whatever it is shown, accepted because the answer was plausible. It was caught only because the owner knew the claim to be wrong. The assumption and its correction are both left visible in the specification.
+
+**Rule** — the LICENSE file, the package metadata, and the README name the same license; enforced by test_the_license_is_the_one_the_documents_name.
+
+---
+
 ## Not checked — as of 0.2.4 @ D13
 
 What the sweep of 2026-09-19 looked at and set aside, or could not look at.
@@ -284,7 +303,7 @@ What the sweep of 2026-09-19 looked at and set aside, or could not look at.
 
 ## Document status
 
-Decisions **D0–D13** recorded; D12 and D13 were resolved by the build. Nothing is open. Running a live model and reporting its results
+Decisions **D0–D14** recorded; D12 and D13 were resolved by the build, and D14 after it. Nothing is open. Running a live model and reporting its results
 (D6, option C) remains deferred to a later specification; D11 covers only the scaffold. The spec is at `specs/verifier-hack-bench.md` and the build prompt at
 `specs/verifier-hack-bench.build-prompt.md`.
 

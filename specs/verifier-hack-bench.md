@@ -10,7 +10,7 @@ ends with an identifier `(R-nn)`; every acceptance criterion starts with `AC-nn`
 requirements it covers.
 
 ## metadata
-- Spec version: 0.2.4
+- Spec version: 0.2.5
 - Status: BUILT
 - Last updated: 2026-09-19
 - Author(s): repository owner (hmbseaotter), interviewed and drafted by Claude via /specify
@@ -127,7 +127,7 @@ n/a (not an agent) — the environment is rebuilt from seed constants on every r
 - Flask plus stdlib `sqlite3` rather than FastAPI or a hand-rolled WSGI application (D9).
 - Results are passed/total counts; honest pass counts are reported for naive verifiers as well as hardened ones (D10).
 - The live-model scaffold lives in `live/`, outside `src/`, so the scored package keeps its no-model-SDK guarantee and its line cap; the scaffold's own size is stated in the README (D11).
-- Confirmed by the owner on 2026-09-19, formerly assumptions: the repository names no third party and is addressed to no particular reader; no LICENSE file for now — reopened at 0.2.4, because the premise recorded for it under assumptions proved false; the 1,500-line cap counts `src/` only; the class formerly called "format credulity" is `CLAIM_CREDULITY`; hardened verifiers may normalize case, surrounding whitespace, and trailing punctuation in free text; a correct outcome reached by a constant policy is labeled exploit; published verifier patterns are cited only where the source was verified during the build; Python 3.11 is the floor and CI is what proves it; the CI workflow is unobserved until the first push; tool-generated session files are git-ignored rather than deleted.
+- Confirmed by the owner on 2026-09-19, formerly assumptions: the repository names no third party and is addressed to no particular reader; the repository is MIT-licensed, decided at 0.2.5 after the earlier no-license assumption proved to rest on a false premise (D14); the 1,500-line cap counts `src/` only; the class formerly called "format credulity" is `CLAIM_CREDULITY`; hardened verifiers may normalize case, surrounding whitespace, and trailing punctuation in free text; a correct outcome reached by a constant policy is labeled exploit; published verifier patterns are cited only where the source was verified during the build; Python 3.11 is the floor and CI is what proves it; the CI workflow is unobserved until the first push; tool-generated session files are git-ignored rather than deleted.
 
 ## design reference
 This block pins the shapes that requirements refer to. Application routes and seed rows are Phase 0
@@ -351,7 +351,7 @@ switch.
 All reviewed and confirmed by the owner on 2026-09-19, and folded into prior decisions.
 
 - [x] The public repository names no third party and is addressed to no particular reader — risk if wrong: the owner wanted it addressed to a specific reader and the README reads as generic.
-- [x] No LICENSE file is added, matching the owner's other public repositories, none of which has a detected license — risk if wrong: readers may hesitate to run or fork code that is all-rights-reserved by default. **Correction at 0.2.4: the premise was false.** The check behind it queried a field that does not exist and so printed "none" for every repository; most of the owner's public repositories carry a license. The owner confirmed this assumption on the strength of a wrong fact, so the decision is reopened.
+- [x] No LICENSE file is added, matching the owner's other public repositories, none of which has a detected license — risk if wrong: readers may hesitate to run or fork code that is all-rights-reserved by default. **Correction at 0.2.4: the premise was false.** The check behind it queried a field that does not exist and so printed "none" for every repository; most of the owner's public repositories carry a license. The owner confirmed this assumption on the strength of a wrong fact, so the decision is reopened. **Resolved at 0.2.5:** MIT (D14).
 - [x] The 1,500-line cap counts `src/` only (Python plus templates), not tests, trajectory JSON, or documentation — risk if wrong: the cap is stricter than planned and tasks must shrink.
 - [x] The taxonomy keeps the plan's five classes but reorders them into a decision procedure and renames "substring or format credulity" to `CLAIM_CREDULITY` — risk if wrong: text the owner drafted elsewhere against the old names no longer matches the repository.
 - [x] Hardened verifiers may normalize case, surrounding whitespace, and trailing punctuation in free-text fields such as a rejection reason — risk if wrong: an atypical honest trajectory is rejected and appears as over-blocking.
@@ -365,6 +365,7 @@ All reviewed and confirmed by the owner on 2026-09-19, and folded into prior dec
 ---
 
 ## decisions made
+- After the build: the repository is MIT-licensed. The earlier assumption that the owner's public repositories were unlicensed came from a faulty query and was withdrawn (D14).
 - P1: an exploit is classified against the strongest verifier it defeats, and the first decision question was reworded to match; the refuse-only probe on an infeasible task is therefore `INFEASIBLE_PASS` (D12).
 - P4: the runner's default model is `claude-opus-5`; a model refusal ends the episode and is recorded, with no fallback to another model; live output carries origin `model`, a value outside the origin enumeration, so a later specification must add it before any model run can be scored (D13).
 - P0: redirect and error responses are written by the application rather than by the framework, so that no recorded response hash depends on the framework's version. No fork: the alternative would have broken byte-identical replay for anyone off the lock file.
@@ -378,6 +379,7 @@ All reviewed and confirmed by the owner on 2026-09-19, and folded into prior dec
 ---
 
 ## changelog
+- 0.2.5 (2026-09-19): MIT license adopted by the owner (D14), closing the question reopened at 0.2.4.
 - 0.2.4 (2026-09-19): sweep. Contradictions fixed: record mode was specified as `serve --record`, a flag that was never built; the license assumption rested on a false fact and is reopened. Stale passages fixed: CLI command list, phase-tag range, the application surface's frozen status, AC-23's wording, and a sentence about commit state that the 0.2.3 entry should never have carried, since commit state belongs to git. Gaps filled: origin `model`, the `atypical` flag, and the trajectory file's fields now have stated semantics; the optional `live` extra is recorded under constraints. One promise checked and found broken: D4 says the README states that in practice the environment would be fixed too, and the README did not; the sentence was added. The other four promises the decision record makes about the README hold. No requirement was added, removed, or reworded.
 - 0.2.3 (2026-09-19): phase 4 built; default model corrected to `claude-opus-5`; D13 recorded; status BUILT.
 - 0.2.2 (2026-09-19): wording only — two assumption lines rephrased for public-repository hygiene.
