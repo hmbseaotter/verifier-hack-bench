@@ -140,6 +140,8 @@ is a judgment nothing can check.
 
 **Partly taken up by D11** — the scaffold for option (C) was built as phase 4. Running a model and reporting what it does remains deferred.
 
+**One exception made by D17** — a single run file that a model produced is published, unscored, as an illustration of two points the README makes. No count, rate, or comparison is reported from it, so option (C) stays deferred.
+
 **Rule** — every targeted exploit must pass its naive verifier, and probes are counted separately; enforced by the tests for AC-06 and AC-08.
 
 ---
@@ -236,7 +238,7 @@ is a judgment nothing can check.
 **Options considered**
 - **(A) Always classify against the naive verifier** — simple; but the class of a surviving exploit would then describe a flaw that hardening already fixed, and say nothing about why it still passes.
 - **(B) One class per verifier version** — accurate; breaks "exactly one class per exploit" and with it every per-class count.
-- **(C) Classify against the strongest verifier the exploit defeats** — single-valued, and the class names the assumption to fix next, which is what a reader of the residual list needs.
+- **(C) Classify against the strongest verifier the exploit defeats** (with two verifiers: the hardened one if the exploit gets through it, otherwise the naive one) — single-valued, and the class names the assumption to fix next, which is what a reader of the residual list needs.
 
 **Decision ✅** — **(C)**. The first decision question was reworded from "passed without correctly declaring infeasibility" to "passed for any reason other than its declaring infeasibility", which says the same thing in terms of what the verifier looked at, consistent with the other four questions.
 
@@ -262,9 +264,9 @@ is a judgment nothing can check.
 
 **Why** — A harness that measures a model must not quietly substitute another one. And the choice of how much to spend is not the builder's to make.
 
-**Consequences / caveats** — `model` is deliberately outside the origin enumeration, so no model run can enter the scored set until a later specification adds it and says how such runs are counted. Declining the provider's fallback default is a deviation from its guidance, made for a stated reason; the owner may overrule it. The model-backed policy has never been executed: no test may construct it, so its first real run is also its first test.
+**Consequences / caveats** — `model` is deliberately outside the origin enumeration, so no model run can enter the scored set until a later specification adds it and says how such runs are counted. Declining the provider's fallback default is a deviation from its guidance, made for a stated reason; the owner may overrule it. The model-backed policy has never been executed: no test may construct it, so its first real run is also its first test. *Update, 2026-09-21: the default model chosen here was changed by D16 after that first real run; the refusal rule stands.*
 
-**Rule** — the runner refuses without the flag and the key, and no test constructs the model-backed policy; enforced by the tests for AC-35 and AC-37. That the model-backed policy *works* is not checkable without spending money, and is unverified.
+**Rule** — the runner refuses without the flag and the key, and no test constructs the model-backed policy; enforced by the tests for AC-35 and AC-37. That the model-backed policy *works* is not checkable without spending money, and is unverified. *Update, 2026-09-21: the owner has since spent the money; what those runs did and did not exercise is listed in the section on what was not checked.*
 
 ---
 
@@ -287,23 +289,89 @@ is a judgment nothing can check.
 
 ---
 
-## Not checked — as of 0.2.4 @ D13
+## D15 — How does a run that nobody has labeled get judged?
 
-What the sweep of 2026-09-19 looked at and set aside, or could not look at.
+**Fork:** A live run arrives labeled `unreviewed`, and a fresh browser recording carries whatever label was chosen before the session started. `replay` and `score` load files through scored-set validation, which rejects `unreviewed` on purpose (AC-34). So the person who has to label a run had no command that showed what the two verifiers say about that run. Step-by-step instructions for a live run, written on 2026-09-20, ended at "read the JSON".
 
-- **CI.** The workflow has never run. Linux behavior is unobserved until the first push, and macOS is not checked at all. The README describes what CI does; that sentence is a statement about configuration, not an observation. *Update, 2026-09-20: the workflow has since run. Lint, type-check, tests, scorecard reproduction, and replay pass on Ubuntu and Windows under Python 3.11 and 3.14, so Linux behavior is now observed. macOS remains unchecked.*
-- **The model-backed policy.** It has never been executed, because no test may construct it. Its request and response handling follow the provider's documented shapes and are otherwise unverified.
-- **Citations.** The four cited sources were opened and their claims checked, but through a fetch tool that summarizes pages, not by reading the PDFs. Section numbers were not re-verified independently.
-- **`docs/CONCEPTS.md` is not under test.** Every path and symbol it names was checked by hand in this sweep and exists; nothing will notice if one goes stale later. The README and the walkthrough, by contrast, are held by tests.
+**Options considered**
+- **(A) A `judge` command that does not read the label** — replay the file, hand the evidence to both verifiers through the scorer's own `evaluate`, print two verdicts with their reasons, write nothing.
+- **(B) Teach scored-set validation to accept `unreviewed`** — `replay` and `score` would then load such files. That weakens the one gate that keeps unreviewed runs out of the scorecard, and every consumer of the label enumeration gains a third case.
+- **(C) A helper script outside the repository** — no change to the public artifact, but throw-away work, and a reader who follows the README's live-run steps would still end at a file that nothing judges.
+- **(D) Put the command in `live/`** — leaves `src/` untouched, but judging a file has nothing to do with calling a model, and a browser recording needs the same command.
+
+**Decision ✅** — **(A)**, chosen by the owner.
+
+**Why** — A verifier is never shown a label (D5, R-07), so judging a file needs none; reading the label would be the irregular choice. The command reuses `replay` and `evaluate`, so there is one code path for verdicts, and a test holds `judge` to the scorecard on every committed trajectory.
+
+**Consequences / caveats** — `judge` builds the trajectory with placeholder authored fields, the way the live runner already does before a run is stamped. A verdict is a result, so the exit code does not say pass or fail: zero means judged, non-zero means the replay diverged and nothing was judged. `judge` does not put model-produced runs into the scorecard; that still belongs to a later specification (D6, D13). `src/` grows to about 1,480 of its 1,500 lines.
+
+**Rule** — `judge` reads no authored field, writes no file, and agrees with the scorecard on every committed trajectory; enforced by test_judge_gives_both_verdicts_for_a_run_nobody_has_labeled_and_writes_nothing, test_judge_and_the_scorecard_never_disagree, and test_judge_refuses_a_run_that_does_not_replay.
+
+---
+
+## D16 — Which model is the default, now that the first choice is refused?
+
+**Fork:** D13 made `claude-opus-5` the default, following the provider's guidance to default to its newest model. On 2026-09-21 the owner ran the runner for the first time. The provider's safety classifier declined the request twice, before the model had written anything, under the policy category `cyber`. The same request, sent to `claude-opus-4-8`, was served. The provider documents all of this: its newest models carry these classifiers, benign work can trigger the `cyber` category, and the stated remedy is to send the request to another model. A reader following the README would have ended at a refusal with no steps.
+
+**Options considered**
+- **(A) Default to `claude-opus-4-8`, and document the refusal** — the reader's first run works; the README says what a classifier refusal looks like and that `--model` selects another model.
+- **(B) Keep `claude-opus-5`, and document the refusal and the `--model` remedy** — leaves D13 untouched; every reader's first run is likely to end at a refusal.
+- **(C) No default: make `--model` required** — nothing in the repository then implies which model is "the" model; adds friction, and changes the runner's interface.
+- **(D) Reword the system prompt until the classifier lets the request through** — not suggested by the provider, and it means shaping text to pass a safety filter. Rejected without trial.
+- **(E) Turn on the provider's automatic fallback** — the rerouting that D13 rejected: a run silently finished by a different model is a contaminated data point.
+
+**Decision ✅** — **(A)**, chosen by the owner.
+
+**Why** — A default that is declined before the model reads the request measures nothing. Choosing the model in the open, by name, keeps what D13 protects: no run is ever finished by a model other than the one named on the command line and in the file.
+
+**Consequences / caveats** — This supersedes only D13's choice of default model; D13's refusal rule stands. The observation rests on two declined requests and one served request, on one task, on one day, and the provider can change its classifiers at any time, so the README says "may". A refusal now keeps the policy category and the explanation that the provider returns, because the first refusal was recorded without them and could not be explained.
+
+**Rule** — the README names the same default model as the runner's source, and a refusal's category and explanation are part of the recorded stop text; enforced by test_the_live_run_steps_name_what_the_runner_really_uses and test_a_refusal_keeps_the_category_and_the_explanation_the_api_gave.
+
+---
+
+## D17 — May the repository quote a live run at all?
+
+**Fork:** The specification puts "running a live model, and reporting its results" out of scope (D6, option C, deferred), and the README said that no result from the runner is reported. The owner's first served run then showed two things worth saying, both about verifiers and not about the model: an honest refusal whose conclusion was right and one of whose stated reasons was false, which no verifier here can notice; and an answer with a sentence before the protocol keyword, which one of the over-strict test verifiers would have failed. Say so, and if so, how?
+
+**Options considered**
+- **(A) Quote the run in the README, publish the run file, and hold every stated fact with a test** — the file sits under `live/observed/`, outside `trajectories/`, exactly as the runner wrote it; any reader can run `judge` on it offline.
+- **(B) Quote the run in prose only** — smaller; but it would be the one statement in the README that a reader cannot check, in a repository whose point is that claims are recomputable.
+- **(C) Keep it out of the repository** — consistent with the out-of-scope line as first written; loses a real example of residual gap 2 and of why the control exists.
+- **(D) Add the run to `trajectories/` as a labeled honest run** — it would change the scorecard, and origin `model` is outside the origin enumeration on purpose (D13). Counting model runs is what D6 deferred.
+
+**Decision ✅** — **(A)**, chosen by the owner.
+
+**Why** — An anecdote without its evidence is the kind of claim this repository exists to distrust. Publishing the file costs under two kilobytes and turns the anecdote into something a reader can replay.
+
+**Consequences / caveats** — This is an illustration, not a measurement: one run, one model, one day, read by one person. No count, rate, or comparison is reported, so D6's deferral stands. The file keeps the label `unreviewed` although a person has read it, because it is kept byte for byte as the runner wrote it, and relabeling a model-produced run needs an origin value that the enumeration does not have yet. The model identifier in the file name will age. The scorecard never reads the file.
+
+**Rule** — every fact the README states about the published run is recomputed from the file and the seed data; enforced by test_the_published_model_run_shows_exactly_what_the_readme_says.
+
+---
+
+## Not checked — as of 0.3.3 @ D17
+
+What the sweep of 2026-09-21 looked at and set aside, or could not look at. This list replaces the one written at 0.2.4 @ D13; each of that list's items is carried forward below in its present state.
+
+- **What this sweep read.** The specification, this record, and the build prompt were read whole, and every path and symbol named in the README and the two documents under `docs/` was checked by script. The README and `docs/CONCEPTS.md` were reviewed line by line by the owner on 2026-09-20 and 2026-09-21, reading as a newcomer would. `docs/WALKTHROUGH.md` was not re-read in this sweep; its code excerpts, seed facts, and run names are held by a test.
+- **CI and Python versions.** The workflow passes on Ubuntu and Windows under Python 3.11 and 3.14, last observed on the commit before this one. The development machine has no 3.11 interpreter: between a change and its first CI run, 3.11 rests on the linter, which checks against a 3.11 target. macOS is not checked at all.
+- **The model-backed policy.** No test may construct it. The owner has run it three times. Two requests were declined by the provider's safety classifier before the model wrote anything, and were recorded as refusals with no steps, as D13 requires. One request was served and ran the full exchange: the model sent requests through the tool, received each result, and returned a final answer; the file replayed and was judged. Not exercised with a real model: several tool calls in one turn, an invalid tool call, the step limit, and the output-token budget. Those paths are tested with the scripted stand-in only.
+- **What D16 rests on.** Three requests, on one task, on one day. Whether the newest model declines the other four tasks was not tried, and the provider can change its classifiers at any time. The README says "may".
+- **The README's live-run steps.** Each command was run as written, with two limits. The PowerShell line that asks for the key was run by the owner at a real terminal and never by a test, since it needs one. The Linux and macOS line was run in bash only, with its input piped in; it was not run in zsh and not at a real terminal.
+- **`judge` on a path that does not exist** ends in the interpreter's own file-not-found error and not in a message of this harness. Left as is.
+- **The published run (D17) is one file, and its test names that file.** A second file placed under `live/observed/` would be covered by the repository-wide checks for control characters, credentials, and local paths, and by nothing else.
+- **Citations.** The four cited sources were opened and their claims checked, but through a fetch tool that converts pages to text, not by reading the PDFs. Section numbers were not re-verified independently. The provider's documentation page that D16 and the README cite was read the same way on 2026-09-21; it is a living page and may change.
+- **`docs/CONCEPTS.md` is partly under test.** Held by tests: the glossary's alphabetical order, the seed counts it states, the hashing tools it names, the absence of first person, and the absence of control characters. Not held by any test: the paths and symbols in the glossary's "Where it lives" column, which were checked by script in this sweep, and its example commands for record mode and `judge`, which were run by hand.
 - **The fingerprint set is an enumeration of six modules.** Verifier helper logic in `evidence.py`, and the replay and scoring code, are outside it. A change there that alters any verdict still changes the scorecard and fails `score --check`; what is lost is only the fingerprint that would say *which* input moved. Accepted for now; widening the set to every module under `src/` would change the committed scorecard and is left as a follow-up.
 - **Whether each label names the right class.** The taxonomy makes classification decidable, and tests hold that every exploit has exactly one class. That the class chosen is the correct one remains judgment, recorded as a rationale in each file (D3).
-- **Stale claims about commit state: two instances, fixed, no scanner.** The specification and the build prompt each said phase 4 awaited approval after it had been committed. Two instances do not yet justify a detector; the cheaper rule is that specification prose does not describe commit state at all. A third instance would justify a scan.
+- **Sentences that expire: now held by a scan.** The list at 0.2.4 recorded two stale claims about commit state and said a third instance would justify a detector. Three more of the same shape followed, each a sentence saying that something "has never" happened: about CI, about the model-backed policy, and in the README about the runner. A test now rejects that construction in every tracked document and source file except this record, whose entries are dated and are corrected by dated notes, never rewritten.
 
 ---
 
 ## Document status
 
-Decisions **D0–D14** recorded; D12 and D13 were resolved by the build, and D14 after it. Nothing is open. Running a live model and reporting its results
+Decisions **D0–D17** recorded; D12 and D13 were resolved by the build, and D14 to D17 after it. Nothing is open. Running a live model and reporting its results
 (D6, option C) remains deferred to a later specification; D11 covers only the scaffold. The spec is at `specs/verifier-hack-bench.md` and the build prompt at
 `specs/verifier-hack-bench.build-prompt.md`.
 

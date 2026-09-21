@@ -7,8 +7,9 @@ existing target object; and infeasibility overrides all of them. That partition 
 "exactly one class per exploit" decidable instead of arguable (decision D3).
 
 Where the naive and the hardened verifier pass an exploit for different reasons, the exploit is
-classified against the strongest verifier it defeats, so that its class names the assumption to
-fix next (decision D12).
+classified against the strongest verifier it defeats: the hardened verifier if the exploit gets
+through it, otherwise the naive one. Its class then names the assumption to fix next (decision
+D12).
 """
 from __future__ import annotations
 

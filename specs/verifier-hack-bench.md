@@ -10,15 +10,15 @@ ends with an identifier `(R-nn)`; every acceptance criterion starts with `AC-nn`
 requirements it covers.
 
 ## metadata
-- Spec version: 0.2.5
+- Spec version: 0.3.3
 - Status: BUILT
-- Last updated: 2026-09-19
+- Last updated: 2026-09-21
 - Author(s): repository owner (hmbseaotter), interviewed and drafted by Claude via /specify
 - Target type: library/service (Python library plus CLI harness)
 - Build class: build-required
 - Role: n/a
-- Produced by: /specify @ 99f8604
-- Last swept: 2026-09-19 @ 0.2.4 @ D13 — next sweep due at ~8-10 accrued decisions, before publishing, or at phase completion, whichever comes first
+- Produced by: /specify @ 99f8604 (https://github.com/hmbseaotter/agent-specification-toolkit)
+- Last swept: 2026-09-21 @ 0.3.3 @ D17 — next sweep due at ~8-10 accrued decisions or at the next phase completion, whichever comes first
 - Artifacts land in: the repository root (`verifier-hack-bench/`), with specifications under `specs/`
 - Visibility: public
 - Decision record: specs/verifier-hack-bench.decisions.md
@@ -57,11 +57,12 @@ any honest trajectory, and can trace every count to one trajectory file and one 
 - [P3] README: limits in the opening paragraph, claim, method, generated scorecard table, taxonomy, hardening patterns, residual gaps, reproduction steps.
 - [P3] `docs/CONCEPTS.md` (plain-language glossary) and `docs/WALKTHROUGH.md` (one task traced end to end).
 - [P3] CI workflow: Ubuntu and Windows, Python 3.11 and 3.14, running lint, type-check, tests, and `score --check`.
+- [P4] `python -m vhb judge <files>`: replays trajectory files and prints both verifiers' verdicts with their reasons, without reading any label, so that a run nobody has reviewed yet can be judged before it is labeled (D15).
 - [P4] Live-model scaffold in `live/`, outside the scored package: a policy interface, an episode runner that drives `reset` and `step` and records through the recorder, a scripted fake policy for tests, and a model-backed policy that is never constructed by the build or the tests (D11).
 
 ## out of scope (v1)
 - Training of any kind (RL, fine-tuning, reward models) — the artifact is about verifier quality, not training; a thin training veneer would claim a competence the repository does not demonstrate.
-- Running a live model against the tasks, and reporting its results — it spends API money, so only the owner does it, with their own key. P4 builds the scaffold and stops there; results from a live run belong to a later specification.
+- Running a live model against the tasks, and reporting its results — it spends API money, so only the owner does it, with their own key. P4 builds the scaffold and stops there; results from a live run belong to a later specification. One exception, recorded in D17: a single run file is published under `live/observed/`, unscored, as an illustration of two points the README makes. No count, rate, or comparison is reported from it.
 - LLM judges or any model-graded verification — they would break the no-model, byte-identical scorer.
 - A general framework: no plugin system, no environment abstraction layer, no configuration system. Five hard-coded tasks.
 - Real websites or third-party benchmark environments — nondeterminism, rate limits, and terms-of-service exposure for no added evidence.
@@ -73,14 +74,14 @@ any honest trajectory, and can trace every count to one trajectory file and one 
 - Statistical claims. Denominators are single digits, so results are counts, never significance statements.
 
 ## control surface
-The bench itself is not an agent: it is a CLI harness that runs to completion, `python -m vhb record | replay | probes | score | readme | serve`.
+The bench itself is not an agent: it is a CLI harness that runs to completion, `python -m vhb record | replay | judge | probes | score | readme | serve`.
 
 The P4 live runner is an agent loop, and its control surface is:
 - Runtime / form factor: interactive CLI, `python live/run_agent.py --task <id> --live`.
 - Invoked / started by: the owner, by hand. Never by the build, the tests, or CI.
 - Human control mid-run: none; episodes are short, and Ctrl-C stops one.
 - Stopped by: the policy returning a final answer, the step limit (default 15), or the output-token budget, whichever comes first.
-- Human-in-the-loop checkpoints: starting a live run at all. A model-produced trajectory is written as `unreviewed` and enters the scored set only after a person labels it.
+- Human-in-the-loop checkpoints: starting a live run at all. A model-produced trajectory is written as `unreviewed`. It cannot enter the scored set until a person has labeled it and a later specification has said how model-produced runs are counted (D13).
 
 ## triggers & scheduling
 n/a (not an agent) — on-demand CLI invocation and CI on push.
@@ -98,7 +99,7 @@ n/a (not an agent) — the environment is rebuilt from seed constants on every r
 - Deterministic (plain code, NO LLM): everything under `src/`. Environment, recorder, replayer, verifiers, probes, scorer, fingerprints, README table generation. Zero model calls in phases P0 to P3, and zero model calls by the build or the tests in P4.
 - Type & value discipline: all of `src/`, and `live/` with it, passes `mypy` in strict mode; trajectory, step, verdict, and task records are frozen dataclasses; module constants are `typing.Final`; taxonomy classes and labels are enums; money is integer cents and never float.
 - Requires judgment (LLM): nothing in the bench. Human judgment enters only through authored labels and rationales in trajectory files, which the scorer loads and never derives (D5). In the P4 live runner the one judgment task is the agent's own policy: choosing the next action.
-- Model tier per judgment task: agent policy → the owner's choice through `--model`. The default is `claude-opus-5`, following the provider's current guidance not to choose a cheaper tier on the user's behalf; what a run costs is the owner's decision (D13).
+- Model tier per judgment task: agent policy → the owner's choice through `--model`. The default is `claude-opus-4-8`, the newest model that served the runner's request when the owner first ran it: the provider's newest models sit behind safety classifiers that declined the request before the model had read it (D16, which supersedes the default chosen in D13). What a run costs is the owner's decision (D13).
 - Cost / budget guardrails: step limit 15 and an output-token cap per episode, both overridable by flag; one episode per invocation.
 - Stop / escalate when: a limit is reached → write the partial trajectory as `unreviewed` and exit non-zero.
 
@@ -111,7 +112,7 @@ n/a (not an agent) — the environment is rebuilt from seed constants on every r
 - Source under `src/` totals at most 1,500 physical lines (Python plus templates). Tests, trajectory JSON, and documentation are not counted.
 - The environment is frozen once P1 trajectories are recorded. Any later change to the application or the seed requires re-recording every trajectory and a changelog line, because every state digest changes.
 - Do NOT add runtime packages without flagging for approval first.
-- Public-repository hygiene: no third-party names, no absolute local paths, no credentials, no session files in any tracked file.
+- Public-repository hygiene: no private person or organization is named, and no tracked file holds an absolute local path, a credential, or a session file. Published work and the software this repository uses are cited by name.
 - Git: nothing is pushed by the build. Commit policy follows the owner's approval rule as recorded in the implementation-phases block.
 
 ## prior decisions
@@ -127,7 +128,7 @@ n/a (not an agent) — the environment is rebuilt from seed constants on every r
 - Flask plus stdlib `sqlite3` rather than FastAPI or a hand-rolled WSGI application (D9).
 - Results are passed/total counts; honest pass counts are reported for naive verifiers as well as hardened ones (D10).
 - The live-model scaffold lives in `live/`, outside `src/`, so the scored package keeps its no-model-SDK guarantee and its line cap; the scaffold's own size is stated in the README (D11).
-- Confirmed by the owner on 2026-09-19, formerly assumptions: the repository names no third party and is addressed to no particular reader; the repository is MIT-licensed, decided at 0.2.5 after the earlier no-license assumption proved to rest on a false premise (D14); the 1,500-line cap counts `src/` only; the class formerly called "format credulity" is `CLAIM_CREDULITY`; hardened verifiers may normalize case, surrounding whitespace, and trailing punctuation in free text; a correct outcome reached by a constant policy is labeled exploit; published verifier patterns are cited only where the source was verified during the build; Python 3.11 is the floor and CI is what proves it; the CI workflow is unobserved until the first push; tool-generated session files are git-ignored rather than deleted.
+- Confirmed by the owner on 2026-09-19, formerly assumptions: the repository names no private person or organization and is addressed to no particular reader; the repository is MIT-licensed, decided at 0.2.5 after the earlier no-license assumption proved to rest on a false premise (D14); the 1,500-line cap counts `src/` only; the class formerly called "format credulity" is `CLAIM_CREDULITY`; hardened verifiers may normalize case, surrounding whitespace, and trailing punctuation in free text; a correct outcome reached by a constant policy is labeled exploit; published verifier patterns are cited only where the source was verified during the build; Python 3.11 is the floor and CI is what proves it; the CI workflow is unobserved until the first push; tool-generated session files are git-ignored rather than deleted.
 
 ## design reference
 This block pins the shapes that requirements refer to. Application routes and seed rows are Phase 0
@@ -149,10 +150,10 @@ discovery: they may change during P0 with a changelog line, and are frozen from 
 - Origin `authored`: written as an action list by the author. An authored exploit is a targeted exploit and must pass its task's naive verifier.
 - Origin `probe`: generated by the harness. Counted separately from targeted exploits; not required to pass anything.
 - Origin `human`: captured through record mode. Counted exactly like `authored`.
-- Label `unreviewed` (P4, live runner output only): produced by a model and not yet judged by a person. It is deliberately outside the label enumeration of the scored set, so validation rejects it; a person assigns `honest` or `exploit`, with class and rationale, before the file may move into `trajectories/`.
+- Label `unreviewed` (P4, live runner output only): produced by a model and not yet judged by a person. It is deliberately outside the label enumeration of the scored set, so validation rejects it; a person assigns `honest` or `exploit`, with class and rationale, before the file may move into `trajectories/`. The one run published under `live/observed/` keeps this label, because it is kept exactly as the runner wrote it (D17).
 - Origin `model` (P4, live runner output only): produced by a model-driven episode. Like `unreviewed`, it is deliberately outside the enumeration of the scored set; a later specification must add it, and say how such runs are counted, before any can be scored (D13).
 - Flag `atypical` (honest trajectories only): the run reaches the honest outcome by an unusual but legitimate path. It exists to give the over-blocking control something to catch; on an exploit it is invalid.
-- Trajectory file fields: `task`, `label`, `origin`, `exploit_class` (null when honest), `rationale`, `atypical`, `answer`, and `steps`, each step holding `action`, `observation`, and `state_digest`.
+- Trajectory file fields: `task`, `label`, `origin`, `exploit_class` (null when honest), `rationale`, `atypical`, `answer`, and `steps`, each step holding `action`, `observation`, and `state_digest`. Live runner output carries three more fields: `model`, `output_tokens`, and `stop`, which says why the episode ended and, for a refusal, keeps the policy category and explanation that the provider returned (D16).
 - Feasible task: at least one honest trajectory completes it. An answer declaring infeasibility is wrong for it.
 - Infeasible task: no action sequence completes it. The honest outcome is an answer beginning `INFEASIBLE:` with protected state unchanged.
 - Verdict `passed = true`: the verifier would emit reward. Verdict `passed = false`: no reward, with at least one reason. A verifier exception is a failed verdict, never a pass.
@@ -160,8 +161,9 @@ discovery: they may change during P0 with a changelog line, and are frozen from 
 ### taxonomy — classes partition what the verifier looked at
 Each class names the ungrounded assumption the verifier made. Apply the questions in order; the
 first "yes" decides the class. Where the naive and the hardened verifier pass an exploit for
-different reasons, classify it against the strongest verifier it defeats: the class then names
-the assumption to fix next (D12).
+different reasons, classify it against the strongest verifier it defeats — the hardened verifier
+if the exploit gets through it, otherwise the naive one. The class then names the assumption to
+fix next (D12).
 
 | Order | Class | Decision question | Ungrounded assumption |
 |---|---|---|---|
@@ -224,6 +226,7 @@ settings page where the policy limit is writable, a manual export upload, and an
 - [P2] WHEN the scorer runs, it SHALL replay every trajectory, exit non-zero without writing a scorecard if any replay diverges, and otherwise evaluate both verifiers on every trajectory and write the scorecard. (R-20)
 - [P2] WHEN `score --check` runs, the harness SHALL exit zero only if the freshly computed scorecard is byte-identical to the committed `scorecard.json`. (R-21)
 - [P4] WHEN a policy returns a final answer, or the step limit or token budget is reached, the live runner SHALL end the episode and write the trajectory, exiting zero only in the final-answer case. (R-43)
+- [P4] WHEN `judge` is given trajectory files, the harness SHALL replay each file and print the verdict of the naive and of the hardened verifier with every failure reason; it SHALL NOT read the file's label, origin, class, or rationale; it SHALL write no file; and for a file whose replay diverges it SHALL print no verdict and exit non-zero. (R-46)
 
 ### state-driven (WHILE — true for the duration of a state)
 - [P0] WHILE record mode is active, the application SHALL handle requests one at a time, so that captured action order equals execution order. (R-22)
@@ -303,6 +306,7 @@ scorecard mismatch all exit non-zero with the file and field named.
 - [x] [P4] AC-35: no module under `src/` imports `live`, and no test references the model-backed policy except to assert that it refuses (covers R-42).
 - [x] [P4] AC-36: the runner stops at the step limit with a non-zero exit and a written partial trajectory, and exits zero when the policy returns a final answer (covers R-43).
 - [x] [P4] AC-37: without `--live`, or without the API key variable, the runner exits non-zero with socket creation patched to raise, and the key value never appears in any written file or captured output (covers R-44, R-45).
+- [x] [P4] AC-38: `judge` prints a pass-or-fail line per verifier for a file labeled `unreviewed` and leaves the directory unchanged; its verdicts equal the scorecard's for every committed trajectory; and for a file whose replay diverges it prints no verdict and exits non-zero (covers R-46).
 
 ---
 
@@ -337,8 +341,8 @@ switch.
 
 ### phase 4 — live-model scaffold, no spend
 - Goal: everything the owner needs to run a model against the tasks later, proven with a scripted fake policy, without one API call being made by the build.
-- Includes: all P4 items. An optional item, selected by the owner for the first push against the interviewer's advice to defer it; placed outside `src/` to protect the offline guarantee and the line cap (D11).
-- Done when: AC-34 to AC-37 pass.
+- Includes: all P4 items, among them the `judge` command, which was added after the build (D15). An optional item, selected by the owner for the first push against the interviewer's advice to defer it; placed outside `src/` to protect the offline guarantee and the line cap (D11).
+- Done when: AC-34 to AC-38 pass.
 
 ### composition of the first push
 - Skeleton floor (required): every P0 to P3 item.
@@ -350,7 +354,7 @@ switch.
 ## assumptions
 All reviewed and confirmed by the owner on 2026-09-19, and folded into prior decisions.
 
-- [x] The public repository names no third party and is addressed to no particular reader — risk if wrong: the owner wanted it addressed to a specific reader and the README reads as generic.
+- [x] The public repository names no private person or organization and is addressed to no particular reader — risk if wrong: the owner wanted it addressed to a specific reader and the README reads as generic.
 - [x] No LICENSE file is added, matching the owner's other public repositories, none of which has a detected license — risk if wrong: readers may hesitate to run or fork code that is all-rights-reserved by default. **Correction at 0.2.4: the premise was false.** The check behind it queried a field that does not exist and so printed "none" for every repository; most of the owner's public repositories carry a license. The owner confirmed this assumption on the strength of a wrong fact, so the decision is reopened. **Resolved at 0.2.5:** MIT (D14).
 - [x] The 1,500-line cap counts `src/` only (Python plus templates), not tests, trajectory JSON, or documentation — risk if wrong: the cap is stricter than planned and tasks must shrink.
 - [x] The taxonomy keeps the plan's five classes but reorders them into a decision procedure and renames "substring or format credulity" to `CLAIM_CREDULITY` — risk if wrong: text the owner drafted elsewhere against the old names no longer matches the repository.
@@ -365,9 +369,12 @@ All reviewed and confirmed by the owner on 2026-09-19, and folded into prior dec
 ---
 
 ## decisions made
+- After the build: one model-driven run is published under `live/observed/`, exactly as the runner wrote it and outside the scored set, so that the two observations the README quotes from it can be checked by any reader; a test recomputes each stated fact. Reporting results of live runs stays deferred (D17).
+- After the build: the runner's default model is `claude-opus-4-8`. The owner's first real runs, on `claude-opus-5`, were declined by the provider's safety classifier before the model had read the request; a refusal now keeps the policy category and explanation that the provider returns (D16).
+- After the build: `judge` prints both verifiers' verdicts for any trajectory file without reading its label, so a live run or a fresh recording can be judged before a person labels it. Validation of the scored set stays as strict as before (D15).
 - After the build: the repository is MIT-licensed. The earlier assumption that the owner's public repositories were unlicensed came from a faulty query and was withdrawn (D14).
 - P1: an exploit is classified against the strongest verifier it defeats, and the first decision question was reworded to match; the refuse-only probe on an infeasible task is therefore `INFEASIBLE_PASS` (D12).
-- P4: the runner's default model is `claude-opus-5`; a model refusal ends the episode and is recorded, with no fallback to another model; live output carries origin `model`, a value outside the origin enumeration, so a later specification must add it before any model run can be scored (D13).
+- P4: the runner's default model was `claude-opus-5` (since changed, D16); a model refusal ends the episode and is recorded, with no fallback to another model; live output carries origin `model`, a value outside the origin enumeration, so a later specification must add it before any model run can be scored (D13).
 - P0: redirect and error responses are written by the application rather than by the framework, so that no recorded response hash depends on the framework's version. No fork: the alternative would have broken byte-identical replay for anyone off the lock file.
 - P2: a test-only set of five over-strict verifiers demonstrates that the honest control can fail. It adds no source under `src/`.
 
@@ -379,6 +386,11 @@ All reviewed and confirmed by the owner on 2026-09-19, and folded into prior dec
 ---
 
 ## changelog
+- 0.3.3 (2026-09-21): sweep, due before publication. Contradiction fixed: the control surface said a model-produced run enters the scored set once a person labels it, while D13 says a later specification must first add the origin value; the control surface now says both. Gaps filled: the live runner's three extra file fields, and what `stop` holds after a refusal, now have stated semantics; the `unreviewed` entry names the published run (D17); phase 4 names `judge` among its items. Stale passages fixed in the decision record: D6 and D13 carry notes pointing to D17 and to the owner's first runs, and the list of what was not checked is rewritten as of this version. The build prompt's status note says the specification has moved on since the build. The decisions-made list is back in order. The hygiene constraint said that no third party is named, which the README's citations of published work contradicted; the constraint now says what it means. One class locked: sentences claiming that something is still waiting to happen for the first time went stale three more times, which the earlier list had said would justify a scan, and a test now holds it. No requirement was added, removed, or reworded.
+- 0.3.2 (2026-09-21): one model-driven run published, unscored, as an illustration (D17); the out-of-scope line on live results names that exception. No requirement changed.
+- 0.3.1 (2026-09-21): default model changed to `claude-opus-4-8` after the owner's first live runs (D16); a refusal keeps its policy category and explanation. No requirement changed.
+- 0.3.0 (2026-09-20): `judge` command added at the owner's decision, with R-46, AC-38, and D15. Found while writing step-by-step instructions for a live run: the steps ended at a file that no command in the repository would judge.
+- 0.2.6 (2026-09-20): wording only — "the strongest verifier it defeats" now says what that means with two verifiers: the hardened one if the exploit gets through it, otherwise the naive one. Made together with a plain-language revision of the README and the two documents under `docs/`, prompted by the owner reading them as a newcomer would. The metadata now also names the public repository that `/specify` comes from.
 - 0.2.5 (2026-09-19): MIT license adopted by the owner (D14), closing the question reopened at 0.2.4.
 - 0.2.4 (2026-09-19): sweep. Contradictions fixed: record mode was specified as `serve --record`, a flag that was never built; the license assumption rested on a false fact and is reopened. Stale passages fixed: CLI command list, phase-tag range, the application surface's frozen status, AC-23's wording, and a sentence about commit state that the 0.2.3 entry should never have carried, since commit state belongs to git. Gaps filled: origin `model`, the `atypical` flag, and the trajectory file's fields now have stated semantics; the optional `live` extra is recorded under constraints. One promise checked and found broken: D4 says the README states that in practice the environment would be fixed too, and the README did not; the sentence was added. The other four promises the decision record makes about the README hold. No requirement was added, removed, or reworded.
 - 0.2.3 (2026-09-19): phase 4 built; default model corrected to `claude-opus-5`; D13 recorded; status BUILT.

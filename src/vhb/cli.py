@@ -1,4 +1,4 @@
-"""Command line: python -m vhb record | replay | probes | score | readme | serve."""
+"""Command line: python -m vhb record | replay | judge | probes | score | readme | serve."""
 from __future__ import annotations
 
 import argparse
@@ -10,9 +10,9 @@ from typing import Final
 from vhb.probes import write_probes
 from vhb.record import replay, stamp_file
 from vhb.recordmode import serve
-from vhb.scorer import SCORECARD, ReplayDiverged, markdown_table, render
+from vhb.scorer import SCORECARD, VERSIONS, ReplayDiverged, evaluate, markdown_table, render
 from vhb.taxonomy import ExploitClass
-from vhb.trajectory import Label, Meta, Origin, read_trajectory, write_text
+from vhb.trajectory import Label, Meta, Origin, from_dict, read_trajectory, write_text
 
 TRAJECTORIES: Final = Path("trajectories")
 README: Final = Path("README.md")
@@ -42,6 +42,29 @@ def cmd_replay(args: argparse.Namespace) -> int:
         print(f"{'ok      ' if diverged_at is None else f'DIVERGED at step {diverged_at}'} "
               f"{path.as_posix()}")
     return 1 if failures else 0
+
+
+def cmd_judge(args: argparse.Namespace) -> int:
+    """Replay each file and print what both verifiers say about it. Writes nothing.
+
+    No verifier is ever shown a label, so the label in the file is not read here either. That
+    is what lets a run nobody has reviewed yet - a live run, a fresh recording - be judged
+    first and labeled afterwards (D15). Exit 0 when every file was judged, 2 on a divergence:
+    a verdict, pass or fail, is a result and not an error."""
+    for path in trajectory_files(args.paths):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        placeholder = {"label": Label.HONEST.value, "origin": Origin.HUMAN.value,
+                       "exploit_class": None, "rationale": "", "atypical": False}
+        result = replay(from_dict({**data, **placeholder}, path.as_posix()))
+        if result.evidence is None:
+            print(f"DIVERGED at step {result.diverged_at} {path.as_posix()} - not judged")
+            return 2
+        print(f"{path.as_posix()} (label in the file: {json.dumps(data.get('label'))}, not read)")
+        for version, registry in VERSIONS:
+            verdict = evaluate(registry[data["task"]], result.evidence)
+            print(f"  {version:<9}" + ("pass" if verdict.passed else
+                                       "FAIL: " + "; ".join(verdict.reasons)))
+    return 0
 
 
 def cmd_probes(args: argparse.Namespace) -> int:
@@ -93,6 +116,10 @@ def build_parser() -> argparse.ArgumentParser:
     replay_ = commands.add_parser("replay", help="replay trajectories and compare every stamp")
     replay_.add_argument("paths", nargs="*", type=Path)
     replay_.set_defaults(run=cmd_replay)
+
+    judge = commands.add_parser("judge", help="replay files and print both verifiers' verdicts")
+    judge.add_argument("paths", nargs="+", type=Path)
+    judge.set_defaults(run=cmd_judge)
 
     probes = commands.add_parser("probes", help="write the three generic probes for every task")
     probes.set_defaults(run=cmd_probes)

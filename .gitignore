@@ -23,3 +23,7 @@ Thumbs.db
 
 # Output of the optional live-model runner: unreviewed until a person labels it
 live_runs/
+
+# The live runner reads its API key from the environment only and never from a file.
+# A file of keys has no use here, so none can be added by accident.
+.env*

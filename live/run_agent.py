@@ -27,7 +27,9 @@ from vhb.record import record
 from vhb.tasks import TASKS, Task
 from vhb.trajectory import Action, Label, Meta, Origin, canonical_json, to_dict, write_text
 
-DEFAULT_MODEL: Final = "claude-opus-5"
+# D16: the provider's newest models sit behind safety classifiers that declined this request
+# before the model had read it. The default is the newest model that served the request.
+DEFAULT_MODEL: Final = "claude-opus-4-8"
 KEY_VARIABLE: Final = "ANTHROPIC_API_KEY"
 OUT_DIR: Final = Path("live_runs")
 TOOL: Final[dict[str, Any]] = {
@@ -171,7 +173,7 @@ class ModelPolicy:
                 block.text for block in response.content if block.type == "text").strip())
         if response.stop_reason != "tool_use":
             # A refusal is a result to record, not an error to route around on another model.
-            raise EpisodeStopped(f"model stopped with stop_reason={response.stop_reason}")
+            raise EpisodeStopped(describe_stop(response))
         actions: list[Action] = []
         self._pending = []
         for block in response.content:
@@ -183,6 +185,18 @@ class ModelPolicy:
             if action:
                 actions.append(action)
         return Decision(actions=tuple(actions)) if actions else self.decide(())
+
+
+def describe_stop(response: Any) -> str:
+    """Why the model stopped, on one line. With a refusal the API may name the policy category
+    that triggered it and explain it; both are part of the result, so both are kept."""
+    text = f"model stopped with stop_reason={response.stop_reason}"
+    details = getattr(response, "stop_details", None)
+    if details is None:
+        return text
+    category = getattr(details, "category", None) or "not given"
+    explanation = " ".join(str(getattr(details, "explanation", None) or "none given").split())
+    return f"{text} (category: {category}; explanation: {explanation})"
 
 
 def _action_from(tool_input: object) -> Action | None:

@@ -1,6 +1,6 @@
 # build prompt — verifier-hack-bench, first push (phases P0 to P4)
 
-> **Status: executed.** This prompt was written at spec version 0.2.0 and handed to the build, which finished at 0.2.3 with all 37 acceptance criteria passing. It is kept as the record of what the build was told. Where it and the specification differ, the specification is authoritative: the build resolved forks the prompt could not know about (D12, D13).
+> **Status: executed.** This prompt was written at spec version 0.2.0 and handed to the build, which finished at 0.2.3 with all 37 acceptance criteria passing. It is kept as the record of what the build was told. Where it and the specification differ, the specification is authoritative: the build resolved forks the prompt could not know about (D12, D13). The specification has also moved on since the build: one requirement, one acceptance criterion, and decisions D14 to D17 were added afterwards, and none of them was part of what this prompt asked for.
 
 This is the file handed to the building agent. It targets **phases P0, P1, P2, P3, and P4 of
 `specs/verifier-hack-bench.md` at spec version 0.2.0**, built strictly in that order. The owner

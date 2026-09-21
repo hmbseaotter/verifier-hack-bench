@@ -56,7 +56,7 @@
       "src/vhb/app.py": "b883e128ec9aacfd6ee51d6aa454fe644cf149c1e093958c209a98da92641212",
       "src/vhb/seed.py": "3348a7032b93e234e6d9bffa26c459c2fe25b83989d51355561786338cd1e311",
       "src/vhb/tasks.py": "9d6df681f627572596840040b4496ccf94c4fff0a6096751ff1d97c56f205684",
-      "src/vhb/taxonomy.py": "54f5a8499c516f1394af057bbdb4baeb4c805fe93f04b92d25ba45124827b26a",
+      "src/vhb/taxonomy.py": "8b7cd8db7e4219c87f9dbb7e0affb8e08fc06f1769b969c5190c7f3ae04a9c3f",
       "src/vhb/verifiers/hardened.py": "cd861a1de5e37800bbebb079c260b533e33f0af818494c29e3a6651e10d6e502",
       "src/vhb/verifiers/naive.py": "48f488b7a749efffe65ab0e363040248ee345ecaae521c26a8289b3f64558c79"
     },
