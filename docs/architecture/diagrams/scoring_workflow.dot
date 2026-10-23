@@ -1,0 +1,22 @@
+digraph G {
+  rankdir=TB; ranksep=0.3; nodesep=0.4;
+  node [shape=box, style="rounded,filled", fillcolor="#EEF2F7", fontname="Helvetica", fontsize=11];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+  start [label="python -m vhb score [--check]", fillcolor="#E3ECF8"];
+  val [label="Collect trajectories/**/*.json (sorted);\nload + validate authored fields"];
+  rep [label="Replay each run on a fresh environment;\ncompare every observation + state digest"];
+  div [label="Divergence:\nwrite nothing, exit 2", fillcolor="#F8E3E3"];
+  evi [label="Evidence (initial DB, final DB, steps, answer; no label)\n→ naive AND hardened verifier, same object"];
+  tally [label="Tally pass/total per task × group and per class;\nlist hardened residual + over-blocking; add fingerprints"];
+  chk [label="Canonical JSON.\n--check given?", shape=diamond, fillcolor="#FFF7E0"];
+  write [label="Write scorecard.json,\nprint table, exit 0"];
+  ok [label="Byte-identical to committed:\nexit 0", fillcolor="#E3F3E3"];
+  bad [label="Differs: 'MISMATCH',\nexit 1", fillcolor="#F8E3E3"];
+  start -> val -> rep;
+  rep -> div [label="mismatch"];
+  rep -> evi [label="all match"];
+  evi -> tally -> chk;
+  chk -> write [label="no"];
+  chk -> ok [label="yes"]; chk -> bad [label="yes"];
+  {rank=same; rep; div}
+}

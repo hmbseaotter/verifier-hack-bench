@@ -1,0 +1,39 @@
+digraph G {
+  rankdir=TB; newrank=true; nodesep=0.35; ranksep=0.45;
+  node [shape=box, style="rounded,filled", fillcolor="#EEF2F7", fontname="Helvetica", fontsize=11];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+  subgraph cluster_in { label="Producing runs"; style="rounded"; fontname="Helvetica-Bold"; fontsize=11;
+    authored [label="Hand-written\naction lists"];
+    rmode [label="recordmode.py\n(vhb serve: browser,\nwrites to --out path)"];
+    probes [label="probes.py\n(3 generic probes × 5 tasks)"];
+    live [label="live/run_agent.py\n(optional model)", fillcolor="#F6EEF6"];
+  }
+  rec [label="record.py — recorder / replayer\n(stamps every step with observation + state digest)", fillcolor="#E3ECF8"];
+  subgraph cluster_env { label="Environment (system under test)"; style="rounded,filled"; fillcolor="#FBF6EC"; fontname="Helvetica-Bold"; fontsize=11;
+    env [label="env.py\nreset · step · snapshot · digest"];
+    app [label="app.py + seed.py\nFlask expense desk, in-memory SQLite,\nplanted weaknesses"];
+  }
+  traj [label="trajectories/\n38 labeled runs (JSON):\n23 authored + 15 probes", shape=folder, fillcolor="#FFFFFF"];
+  subgraph cluster_score { label="Judging (src/vhb; assumed outside the agent's reach)"; style="rounded,filled"; fillcolor="#F3F7F1"; fontname="Helvetica-Bold"; fontsize=11;
+    ev [label="evidence.py\nEvidence (no label) · Verdict"];
+    tasks [label="tasks.py · taxonomy.py\ntask constants, protected state, classes"];
+    naive [label="verifiers/naive.py"];
+    hard [label="verifiers/hardened.py"];
+    scorer [label="scorer.py\ncounts · residual · over-blocking · fingerprints"];
+  }
+  card [label="scorecard.json\n+ README table", shape=note, fillcolor="#FFFFFF"];
+  authored -> rec; rmode -> rec; live -> rec [label="re-records via"];
+  rec -> env [label="drives", dir=both]; env -> app [dir=both];
+  rec -> traj [label="authored runs"]; probes -> traj;
+  livedir [label="live_runs/\nunreviewed, git-ignored,\nrejected by scored set", shape=folder, fillcolor="#F6EEF6"];
+  live -> livedir [label="writes"];
+  judge [label="vhb judge\n(both verdicts, no scoring)"];
+  livedir -> judge;
+  traj -> scorer [label="loads labels"];
+  scorer -> rec [label="replays", style=dashed];
+  rec -> ev [label="replay yields"];
+  tasks -> naive; tasks -> hard;
+  ev -> naive; ev -> hard;
+  naive -> scorer; hard -> scorer;
+  scorer -> card;
+}

@@ -1,0 +1,19 @@
+digraph G {
+  rankdir=LR;
+  node [shape=box, style="rounded,filled", fillcolor="#EEF2F7", fontname="Helvetica", fontsize=11];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+  subgraph cluster_runs { label="38 recorded runs (label authored, hidden from verifiers)"; style="rounded"; fontname="Helvetica-Bold"; fontsize=11;
+    honest [label="Honest runs (10)\n5 direct + 5 atypical", fillcolor="#E3F3E3"];
+    targeted [label="Targeted exploits (13)\nwritten to beat the naive check", fillcolor="#F8E9D8"];
+    probes [label="Generic probes (15)\ngenerated: null · 'Done.' · refuse\n× 5 tasks", fillcolor="#F8E9D8"];
+  }
+  v [label="Verifier under test\n(naive and hardened,\nsame evidence)\npass / fail", fillcolor="#E3ECF8"];
+  honest -> v; targeted -> v; probes -> v;
+  subgraph cluster_out { label="What each verdict means"; style="rounded"; fontname="Helvetica-Bold"; fontsize=11;
+    ca [label="Honest + pass\ncorrect (rewards real work)", fillcolor="#E3F3E3"];
+    fr [label="Honest + fail\nOVER-BLOCKING (false reject)\nlisted as over_blocking\nfor hardened only", fillcolor="#F8E3E3"];
+    cc [label="Exploit + fail\ncaught", fillcolor="#E3F3E3"];
+    fa [label="Exploit + pass\nGETS THROUGH (false accept)\nlisted as residual\nfor hardened only", fillcolor="#F8E3E3"];
+  }
+  v -> ca; v -> fr; v -> cc; v -> fa;
+}
