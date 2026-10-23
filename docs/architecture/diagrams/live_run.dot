@@ -1,0 +1,17 @@
+digraph G {
+  rankdir=TB; ranksep=0.3; nodesep=0.4;
+  node [shape=box, style="rounded,filled", fillcolor="#EEF2F7", fontname="Helvetica", fontsize=11];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+  owner [label="live/run_agent.py --task T --live", fillcolor="#E3ECF8"];
+  guard [label="--live flag AND\nAPI key set?", shape=diamond, fillcolor="#FFF7E0"];
+  refuse [label="'refused:' nothing sent\nor written; exit 2", fillcolor="#F8E3E3"];
+  loop [label="run_episode: ModelPolicy decides → actions →\nenv.step → results back to model\n(stops: final answer · 15 steps · 50,000 output tokens · refusal)"];
+  api [label="Model provider API", shape=cylinder, fillcolor="#F6EEF6"];
+  out [label="Re-recorded on a fresh environment →\nlive_runs/<task>__<model>.json, label 'unreviewed'", shape=note, fillcolor="#FFFFFF"];
+  judge [label="python -m vhb judge live_runs\n(both verdicts; authored fields\nnever passed to verifiers)"];
+  human [label="A person reads the run\nand decides its label\n(scored set would need a later spec)", fillcolor="#E3F3E3"];
+  owner -> guard; guard -> refuse [label="no"]; guard -> loop [label="yes"];
+  loop -> api [dir=both];
+  loop -> out -> judge -> human;
+  {rank=same; guard; refuse} {rank=same; loop; api}
+}
